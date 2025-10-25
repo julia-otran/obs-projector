@@ -15,6 +15,18 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 find_package(libobs REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(GLEW REQUIRED)
+
+include_directories(${GLEW_INCLUDE_DIRS})
+include_directories(${glfw3_INCLUDE_DIRS})
+include_directories(${OpenGL_INCLUDE_DIRS})
+link_libraries(${GLEW_LIBRARIES})
+link_libraries(${glfw3_LIBRARIES})
+link_libraries(${OpenGL_LIBRARIES})
+
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
 if(ENABLE_FRONTEND_API)
@@ -35,7 +47,7 @@ if(ENABLE_QT)
   )
 endif()
 
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DTRILIBRARY -DENABLE_LOCALES -DANSI_DECLARATORS")
+add_compile_definitions(TRILIBRARY ENABLE_LOCALES ANSI_DECLARATORS)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src/triangle src/cJSON src/tinycthread/source src/projector)
 

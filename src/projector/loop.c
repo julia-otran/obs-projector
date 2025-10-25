@@ -25,7 +25,7 @@ int loop(void *_) {
 
     render_output *output;
 
-    renders_get_output(output);
+    renders_get_output(&output);
     monitors_load_renders(output);
 
     log_debug("Monitors ready to connect to renders.\n");

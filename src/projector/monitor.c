@@ -67,7 +67,7 @@ monitor* internal_monitors_get_display_monitor(config_display* dsp) {
     return NULL;
 }
 
-void internal_mnitors_set_win_exclude_pick(display_window* dw, int in_exc) {
+void internal_monitors_set_win_exclude_pick(display_window* dw, int in_exc) {
 #ifdef _WIN32
     BOOL exclude = in_exc;
     HWND window_hwnd = glfwGetWin32Window(dw->window);
@@ -91,7 +91,7 @@ void monitors_adjust_windows(projection_config* config) {
                 glfwSetWindowAttrib(dw->window, GLFW_RESIZABLE, GLFW_FALSE);
                 glfwSetInputMode(dw->window, GLFW_STICKY_KEYS, GL_FALSE);
                 glfwSetInputMode(dw->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-                internal_mnitors_set_win_exclude_pick(dw, 1);
+                internal_monitors_set_win_exclude_pick(dw, 1);
             }
             else 
             {
@@ -106,7 +106,7 @@ void monitors_adjust_windows(projection_config* config) {
                 glfwSetWindowAttrib(dw->window, GLFW_RESIZABLE, GLFW_TRUE);
                 glfwSetInputMode(dw->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                 glfwSetInputMode(dw->window, GLFW_STICKY_KEYS, GL_TRUE);
-                internal_mnitors_set_win_exclude_pick(dw, 0);
+                internal_monitors_set_win_exclude_pick(dw, 0);
             }
         }
     }
@@ -139,7 +139,7 @@ void create_window(monitor *m, display_window *dw) {
     dw->window = glfwCreateWindow(mode->width, mode->height, "Projector", monitor, gl_share_context);
 
     glfwSetInputMode(dw->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    internal_mnitors_set_win_exclude_pick(dw, 1);
+    internal_monitors_set_win_exclude_pick(dw, 1);
 }
 
 void create_non_fs_window(monitor* m, display_window *dw, config_display* dsp) {

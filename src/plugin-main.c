@@ -23,13 +23,13 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <stdlib.h>
 
 #include "debug.h"
-#include "ogl-loader.h"
-#include "monitor.h"
 #include "config-structs.h"
 #include "config.h"
-#include "loop.h"
 #include "config-debug.h"
+#include "monitor.h"
+#include "loop.h"
 #include "render-obs.h"
+#include "ogl-loader.h"
 
 static int initialized = 0;
 static int configured = 0;

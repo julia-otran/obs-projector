@@ -17,8 +17,8 @@ static int transfer_window_initialized;
 static GLFWwindow *transfer_window;
 static thrd_t transfer_window_thread;
 
-void get_render_output(render_output *out) {
-   out = output;
+void renders_get_output(render_output **out) {
+   (*out) = output;
 }
 
 void initialize_renders() {
