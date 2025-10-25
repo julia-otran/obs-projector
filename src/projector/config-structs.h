@@ -1,0 +1,91 @@
+#ifndef _CONFIG_STRUCTS_H_
+#define _CONFIG_STRUCTS_H_
+
+typedef struct {
+    double x, y;
+} config_point;
+
+typedef struct {
+    config_point *input_points;
+    config_point *output_points;
+
+    double output_horizontal_adjust_factor;
+    double output_vertical_adjust_factor;
+
+    int count_points;
+} config_point_mapping;
+
+typedef struct {
+    double x, y, w, h;
+} config_bounds;
+
+typedef struct {
+    config_bounds position;
+    int direction;
+    double curve_exponent;
+} config_blend;
+
+typedef struct {
+    int x1, x2, y1, y2;
+    double line_width;
+} config_help_line;
+
+typedef struct {
+    double r, g, b, a;
+} config_color_factor;
+
+typedef struct {
+    double
+        r_to_r, r_to_g, r_to_b, r_exposure, r_bright,
+        g_to_r, g_to_g, g_to_b, g_exposure, g_bright,
+        b_to_r, b_to_g, b_to_b, b_exposure, b_bright;
+} config_color_matrix;
+
+typedef struct {
+    double
+        src_lum, src_q, dst_hue, dst_sat, dst_lum;
+} config_color_corrector;
+
+typedef struct {
+    int x1, x2, x3, x4, y1, y2, y3, y4;
+    config_color_factor color;
+} config_black_level_adjust;
+
+#define CONFIG_COLOR_CORRECTOR_LENGTH 16
+
+typedef struct {
+    int w, h;
+
+    config_color_factor background_clear_color;
+
+    config_bounds render_input_bounds;
+
+    config_color_matrix color_matrix;
+    config_color_corrector color_corrector[CONFIG_COLOR_CORRECTOR_LENGTH];
+
+    config_point_mapping monitor_position;
+
+    int count_blends;
+    config_blend *blends;
+
+    int count_help_lines;
+    config_help_line *help_lines;
+
+    int count_black_level_adjusts;
+    config_black_level_adjust *black_level_adjusts;
+} config_virtual_screen;
+
+typedef struct {
+    config_bounds monitor_bounds;
+    int projection_enabled;
+
+    int count_virtual_screen;
+    config_virtual_screen *virtual_screens;
+} config_display;
+
+typedef struct {
+    int count_display;
+    config_display *display;
+} projection_config;
+
+#endif

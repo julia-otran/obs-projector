@@ -10,6 +10,7 @@ option(ENABLE_QT "Use Qt functionality" OFF)
 include(compilerconfig)
 include(defaults)
 include(helpers)
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
@@ -34,6 +35,58 @@ if(ENABLE_QT)
   )
 endif()
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.c)
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DTRILIBRARY -DENABLE_LOCALES -DANSI_DECLARATORS")
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src/triangle src/cJSON src/tinycthread/source src/projector)
+
+target_sources(
+  ${CMAKE_PROJECT_NAME} 
+  PRIVATE 
+  src/plugin-main.c
+  src/triangle/triangle.h
+  src/triangle/triangle.c
+  src/cJSON/cJSON_Utils.h
+  src/cJSON/cJSON_Utils.c
+  src/cJSON/cJSON.h
+  src/cJSON/cJSON.c
+  src/tinycthread/source/tinycthread.h
+  src/tinycthread/source/tinycthread.c
+  src/projector/clock.c
+  src/projector/clock.h
+  src/projector/config.c
+  src/projector/config-debug.c
+  src/projector/config-debug.h
+  src/projector/config.h
+  src/projector/config-parse.c
+  src/projector/config-parse.h
+  src/projector/config-serialize.c
+  src/projector/config-serialize.h
+  src/projector/config-structs.h
+  src/projector/custom-math.h
+  src/projector/debug.c
+  src/projector/debug.h
+  src/projector/loop.c
+  src/projector/loop.h
+  src/projector/monitor.c
+  src/projector/monitor.h
+  src/projector/ogl-loader.c
+  src/projector/ogl-loader.h
+  src/projector/render.c
+  src/projector/render.h
+  src/projector/render-obs.c
+  src/projector/render-obs.h
+  src/projector/render-pixel-unpack-buffer.c
+  src/projector/render-pixel-unpack-buffer.h
+  src/projector/virtual-screen.c
+  src/projector/virtual-screen.h
+  src/projector/vs-black-level-adjust.c
+  src/projector/vs-black-level-adjust.h
+  src/projector/vs-blend.c
+  src/projector/vs-blend.h
+  src/projector/vs-color-corrector.c
+  src/projector/vs-color-corrector.h
+  src/projector/vs-help-lines.c
+  src/projector/vs-help-lines.h
+)
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
