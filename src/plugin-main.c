@@ -66,8 +66,6 @@ void internal_lib_render_shutdown() {
 
     log_debug("Shutting down monitors...");
     monitors_destroy_windows();
-
-    glfwPollEvents();
 }
 
 void internal_lib_render_load_default_config() {
@@ -189,9 +187,9 @@ void my_output_destroy(void *data) {
         terminated = 1;
     }
 
-    if (data) {
-        free(data);
-    }
+    // if (data) {
+    //     free(data);
+    // }
 
     log_debug("output destroyed");
 }
@@ -208,7 +206,11 @@ bool my_output_start(void *data) {
 void my_output_stop(void *data, uint64_t ts) {
     obs_log(LOG_INFO, "plugin will stop");
 
+    context_info *info = (context_info*) data;
+
     if (configured) {
+        obs_output_end_data_capture(info->output);
+
         internal_lib_render_shutdown();
         configured = 0;
         last_width = 0;
@@ -220,6 +222,10 @@ void my_output_stop(void *data, uint64_t ts) {
 }
 
 void my_output_data(void *data, struct video_data *frame) {
+    if (!configured) {
+        return;
+    }
+
     context_info *info = (context_info*) data;
 
     int width = obs_output_get_width(info->output);
@@ -273,8 +279,8 @@ void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
 
-    my_output_stop(NULL, 0);
-    my_output_destroy(NULL);
+    // my_output_stop(NULL, 0);
+    // my_output_destroy(NULL);
 
 	obs_log(LOG_INFO, "plugin unloaded");
 }

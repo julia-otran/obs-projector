@@ -26,10 +26,6 @@ void initialize_renders() {
 void shutdown_renders() {
     transfer_window_initialized = 0;
 
-    glfwMakeContextCurrent(transfer_window);
-    render_obs_deallocate_buffers();
-    glfwMakeContextCurrent(NULL);
-
     render_obs_shutdown();
 
     free(output);
