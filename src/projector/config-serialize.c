@@ -44,12 +44,6 @@ cJSON* serialize_config_point_mapping(config_point_mapping *in) {
 
     cJSON_AddItemToObject(
         config_point_mapping_json,
-        "output_horizontal_adjust_factor",
-        cJSON_CreateNumber(in->output_horizontal_adjust_factor)
-    );
-
-    cJSON_AddItemToObject(
-        config_point_mapping_json,
         "output_vertical_adjust_factor",
         cJSON_CreateNumber(in->output_vertical_adjust_factor)
     );

@@ -79,6 +79,9 @@ int loop(void *_) {
         }
 
         register_monitor_frame();
+
+        // TODO: Move to main thread
+        glfwPollEvents();
     }
 
     monitors_stop();

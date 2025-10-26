@@ -53,13 +53,13 @@ void glfwIntMonitorCallback(GLFWmonitor* monitor, int event) {
 }
 
 void internal_lib_render_shutdown() {
-    log_debug("Shutting down main loop...\n");
+    log_debug("Shutting down main loop...");
     main_loop_terminate();
 
-    log_debug("Shutting down renders...\n");
+    log_debug("Shutting down renders...");
     shutdown_renders();
 
-    log_debug("Shutting down monitors...\n");
+    log_debug("Shutting down monitors...");
     monitors_destroy_windows();
 }
 
@@ -71,19 +71,19 @@ void internal_lib_render_load_default_config() {
 }
 
 void internal_lib_render_startup() {
-    log_debug("Will load config:\n");
+    log_debug("Will load config:");
     print_projection_config(config);
 
-    log_debug("Initialize renders...\n");
+    log_debug("Initialize renders...");
     initialize_renders();
 
-    log_debug("Creating windows...\n");
+    log_debug("Creating windows...");
     monitors_create_windows(config);
 
-    log_debug("Initializing async transfer windows...\n");
+    log_debug("Initializing async transfer windows...");
     activate_renders(monitors_get_shared_window(), &output_size);
 
-    log_debug("Starting main loop...\n")
+    log_debug("Starting main loop...")
     main_loop_schedule_config_reload(config);
     main_loop_start();
 }
@@ -116,7 +116,7 @@ void internal_lib_render_load_config() {
             internal_lib_render_shutdown();   
             free_projection_config(config);
         } else {
-            log_debug("New config was loaded! hot reloading...\n");
+            log_debug("New config was loaded! hot reloading...");
             projection_config* old_config = config;
 
             config = new_config;
@@ -128,7 +128,7 @@ void internal_lib_render_load_config() {
         }
     }
 
-    log_debug("Staring engine...\n");
+    log_debug("Staring engine...");
 
     config = new_config;
 
@@ -167,6 +167,14 @@ void my_output_update(void *data, obs_data_t *settings) {
 }
 
 void my_output_destroy(void *data) {
+    obs_log(LOG_INFO, "plugin will destroy");
+    
+    if (configured) {
+        internal_lib_render_shutdown();
+        configured = 0;
+        config = NULL;
+    }
+    
     glfwTerminate();
 }
 
@@ -181,6 +189,7 @@ bool my_output_start(void *data) {
 }
 
 void my_output_stop(void *data, uint64_t ts) {
+    obs_log(LOG_INFO, "plugin will stop");
     internal_lib_render_shutdown();
     configured = 0;
     config = NULL;
@@ -218,6 +227,7 @@ bool obs_module_load(void)
 
 void obs_module_unload(void)
 {
+    obs_log(LOG_INFO, "plugin will unload");
     obs_output_stop(output);
     obs_output_release(output);
 

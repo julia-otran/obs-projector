@@ -9,6 +9,7 @@
 
 #define log_debug(...) {\
     obs_log(LOG_INFO, __VA_ARGS__);\
+    fflush(stdout);\
 }
 
 typedef struct {

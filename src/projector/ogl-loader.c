@@ -2,40 +2,43 @@
 
 #include "ogl-loader.h"
 #include "debug.h"
+#include "shaders.h"
 
-static shader_data_node *shaders;
-
-void add_shader_data(char *name, char *data) {
-    shader_data_node *shader_node = (shader_data_node*) malloc(sizeof(shader_data_node));
-
-    size_t len = strlen(name);
-    shader_node->shader_name = malloc(len + 1);
-    memcpy(shader_node->shader_name, name, len);
-
-    shader_node->shader_name[len] = 0;
-
-    len = strlen(data);
-    shader_node->shader_code = malloc(len + 1);
-    memcpy(shader_node->shader_code, data, len);
-
-    shader_node->shader_code[len] = 0;
-
-    shader_node->next = shaders;
-    shaders = shader_node;
-
-    log_debug("Shader data added: %s\n", name);
+const char* get_shader_data(char *name) {
+    if (strcmp("blend.fragment.shader", name) == 0) {
+        return BLEND_FRAGMENT_SHADER;
+    }
+    if (strcmp("blend.vertex.shader", name) == 0) {
+        return BLEND_VERTEX_SHADER;
+    }
+    if (strcmp("blur.fragment.shader", name) == 0) {
+        return BLUR_FRAGMENT_SHADER;
+    }
+    if (strcmp("blur.vertex.shader", name) == 0) {
+        return BLUR_VERTEX_SHADER;
+    }
+    if (strcmp("color-corrector.fragment.shader", name) == 0) {
+        return COLOR_CORRECTOR_FRAGMENT_SHADER;
+    }
+    if (strcmp("color-corrector.vertex.shader", name) == 0) {
+        return COLOR_CORRECTOR_VERTEX_SHADER;
+    }
+    if (strcmp("direct.fragment.shader", name) == 0) {
+        return DIRECT_FRAGMENT_SHADER;
+    }
+    if (strcmp("direct.vertex.shader", name) == 0) {
+        return DIRECT_VERTEX_SHADER;
+    }
+    
+    log_debug("Failed getting shader: %s. Source not found", name);
+    return "";
 }
 
 GLuint loadShader(GLuint type, char *name) {
     GLchar* shader_code[1] = { NULL };
     GLint shader_size[1] = { 0 };
 
-    for (shader_data_node *shader_node = shaders; shader_node; shader_node = shader_node->next) {
-        if (strcmp(name, shader_node->shader_name) == 0) {
-            shader_code[0] = shader_node->shader_code;
-            break;
-        }
-    }
+    shader_code[0] = (GLchar*)get_shader_data(name);
 
     if (shader_code[0] == NULL) {
         log_debug("Shader load fail: '%s' not found.\n", name);

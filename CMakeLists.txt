@@ -51,6 +51,25 @@ add_compile_definitions(TRILIBRARY ENABLE_LOCALES ANSI_DECLARATORS)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src/triangle src/cJSON src/tinycthread/source src/projector)
 
+set(
+  ShaderSources 
+  "src/shaders/blend.fragment.shader"
+  "src/shaders/blend.vertex.shader"
+  "src/shaders/blur.fragment.shader"
+  "src/shaders/blur.vertex.shader"
+  "src/shaders/color-corrector.fragment.shader"
+  "src/shaders/color-corrector.vertex.shader"
+  "src/shaders/direct.fragment.shader"
+  "src/shaders/direct.vertex.shader"
+)
+
+add_custom_command(
+  OUTPUT src/projector/shaders.h
+  COMMAND build-aux/compile-shaders.sh 
+  DEPENDS build-aux/compile-shaders.sh ${ShaderSources}
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 target_sources(
   ${CMAKE_PROJECT_NAME} 
   PRIVATE 
@@ -89,6 +108,7 @@ target_sources(
   src/projector/render-obs.h
   src/projector/render-pixel-unpack-buffer.c
   src/projector/render-pixel-unpack-buffer.h
+  src/projector/shaders.h
   src/projector/virtual-screen.c
   src/projector/virtual-screen.h
   src/projector/vs-black-level-adjust.c
