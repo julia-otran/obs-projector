@@ -46,7 +46,7 @@ void render_obs_create_buffers() {
 }
 
 void render_obs_update_buffers() {
-   mtx_lock(&thread_mutex);
+    mtx_lock(&thread_mutex);
 
     render_pixel_unpack_buffer_node* buffer = render_pixel_unpack_buffer_dequeue_for_write(buffer_instance);
 
@@ -58,6 +58,7 @@ void render_obs_update_buffers() {
                 glBufferData(GL_PIXEL_UNPACK_BUFFER, src_width * src_height * src_line_size, 0, GL_DYNAMIC_DRAW);
                 buffer->width = src_width;
                 buffer->height = src_height;
+                buffer->line_size = src_line_size;
             }
 
             void* data = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);

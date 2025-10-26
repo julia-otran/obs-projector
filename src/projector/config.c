@@ -79,6 +79,11 @@ projection_config* load_config(const char *filePath) {
     
     open_file(&config_file, filePath, "rb");
 
+    if (config_file == NULL) {
+        log_debug("Config file cannot be accessed.");
+        return NULL;
+    }
+
     fseek(config_file, 0L, SEEK_END);
 
     size_t size = ftell(config_file);
@@ -143,6 +148,10 @@ void generate_config(const char *file_path) {
     FILE* config_file;
     
     open_file(&config_file, file_path, "w");
+
+    if (config_file == NULL) {
+        return;
+    }
 
     cJSON *json = serialize_projection_config(&default_config);
 

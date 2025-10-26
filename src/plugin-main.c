@@ -35,6 +35,11 @@ static int initialized = 0;
 static int configured = 0;
 static projection_config *config;
 static render_output_size output_size;
+static obs_output_t *output;
+
+typedef struct {
+    obs_output_t *output;
+} context_info;
 
 void glfwIntErrorCallback(GLint _, const GLchar *error_string) {
     log_debug("Catch GLFW error: %s\n", error_string);
@@ -86,11 +91,15 @@ void internal_lib_render_startup() {
 void internal_lib_render_load_config() {
     configured = 0;
 
+    log_debug("Reloading monitors");
     monitors_reload();
+
+    log_debug("Creating default config");
     internal_lib_render_load_default_config();
 
     projection_config *new_config;
 
+    log_debug("Loading screen configs");
     new_config = load_config(CONFIG_FILE);
 
     if (new_config == NULL) {
@@ -129,7 +138,7 @@ void internal_lib_render_load_config() {
 }
 
 const char* my_output_name(void* type_data) {
-	return "Projector";
+	return "Projector Output";
 }
 
 void* my_output_create(obs_data_t *settings, obs_output_t *output) {
@@ -142,14 +151,14 @@ void* my_output_create(obs_data_t *settings, obs_output_t *output) {
     glfwSetErrorCallback(glfwIntErrorCallback);
     glfwSetMonitorCallback(glfwIntMonitorCallback);
 
-    output_size.render_width = obs_output_get_width(output);
-    output_size.render_height = obs_output_get_height(output);
-
-    video_t *output_video = obs_output_video(output);
-
     initialized = 1;
 
-	return (void*)0;
+    context_info *info = bzalloc(sizeof(context_info));
+    info->output = output;
+
+    obs_log(LOG_INFO, "Output created");
+
+	return (void*)info;
 
 }
 
@@ -162,6 +171,11 @@ void my_output_destroy(void *data) {
 }
 
 bool my_output_start(void *data) {
+    context_info *info = (context_info*) data;
+
+    output_size.render_width = obs_output_get_width(info->output);
+    output_size.render_height = obs_output_get_height(info->output);
+
     internal_lib_render_load_config();
     return true;
 }
@@ -194,11 +208,18 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 bool obs_module_load(void)
 {
 	obs_register_output(&my_output);
+    output = obs_output_create("projector", "Projector Output", NULL, NULL);
+    obs_output_set_media(output, obs_get_video(), NULL);
+    obs_output_start(output);
+
 	obs_log(LOG_INFO, "plugin loaded successfully (version %s)", PLUGIN_VERSION);
 	return true;
 }
 
 void obs_module_unload(void)
 {
+    obs_output_stop(output);
+    obs_output_release(output);
+
 	obs_log(LOG_INFO, "plugin unloaded");
 }

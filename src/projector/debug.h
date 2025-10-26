@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <obs-module.h>
+#include <plugin-support.h>
 
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
 #define log_debug(...) {\
-    printf(__VA_ARGS__);\
-    fflush(stdout);\
+    obs_log(LOG_INFO, __VA_ARGS__);\
 }
 
 typedef struct {
