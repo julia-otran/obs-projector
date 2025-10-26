@@ -28,13 +28,18 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "config-debug.h"
 #include "monitor.h"
 #include "loop.h"
+#include "render.h"
 #include "render-obs.h"
 #include "ogl-loader.h"
 
 static int initialized = 0;
 static int configured = 0;
+static int terminated = 0;
+
+static int last_width = 0;
+static int last_height = 0;
+
 static projection_config *config;
-static render_output_size output_size;
 static obs_output_t *output;
 
 typedef struct {
@@ -61,6 +66,8 @@ void internal_lib_render_shutdown() {
 
     log_debug("Shutting down monitors...");
     monitors_destroy_windows();
+
+    glfwPollEvents();
 }
 
 void internal_lib_render_load_default_config() {
@@ -81,7 +88,7 @@ void internal_lib_render_startup() {
     monitors_create_windows(config);
 
     log_debug("Initializing async transfer windows...");
-    activate_renders(monitors_get_shared_window(), &output_size);
+    activate_renders(monitors_get_shared_window());
 
     log_debug("Starting main loop...")
     main_loop_schedule_config_reload(config);
@@ -142,6 +149,8 @@ const char* my_output_name(void* type_data) {
 }
 
 void* my_output_create(obs_data_t *settings, obs_output_t *output) {
+    terminated = 0;
+
     if (!glfwInit()) {
         return (void*)0;
     }
@@ -167,7 +176,7 @@ void my_output_update(void *data, obs_data_t *settings) {
 }
 
 void my_output_destroy(void *data) {
-    obs_log(LOG_INFO, "plugin will destroy");
+    log_debug("plugin will destroy");
     
     if (configured) {
         internal_lib_render_shutdown();
@@ -175,28 +184,57 @@ void my_output_destroy(void *data) {
         config = NULL;
     }
     
-    glfwTerminate();
+    if (!terminated) {
+        glfwTerminate();
+        terminated = 1;
+    }
+
+    if (data) {
+        free(data);
+    }
+
+    log_debug("output destroyed");
 }
 
 bool my_output_start(void *data) {
     context_info *info = (context_info*) data;
 
-    output_size.render_width = obs_output_get_width(info->output);
-    output_size.render_height = obs_output_get_height(info->output);
-
     internal_lib_render_load_config();
+
+    obs_output_begin_data_capture(info->output, 0);
     return true;
 }
 
 void my_output_stop(void *data, uint64_t ts) {
     obs_log(LOG_INFO, "plugin will stop");
-    internal_lib_render_shutdown();
-    configured = 0;
-    config = NULL;
+
+    if (configured) {
+        internal_lib_render_shutdown();
+        configured = 0;
+        last_width = 0;
+        last_height = 0;
+        config = NULL;
+    }
+
+    log_debug("plugin stopped");
 }
 
 void my_output_data(void *data, struct video_data *frame) {
-    render_obs_push_frame(frame->data, output_size.render_width, frame->linesize[0], output_size.render_height);
+    context_info *info = (context_info*) data;
+
+    int width = obs_output_get_width(info->output);
+    int height = obs_output_get_height(info->output);
+
+    uint8_t *video_data = frame->data[0];
+
+    if (width && height && data && frame->linesize[0]) {
+        renders_push_frame(video_data, width, frame->linesize[0], height);
+        if (width != last_width || height != last_height) {
+            last_width = width;
+            last_height = height;
+            main_loop_schedule_config_reload(config);
+        }
+    }
 }
 
 struct obs_output_info my_output = {
@@ -219,17 +257,24 @@ bool obs_module_load(void)
 	obs_register_output(&my_output);
     output = obs_output_create("projector", "Projector Output", NULL, NULL);
     obs_output_set_media(output, obs_get_video(), NULL);
-    obs_output_start(output);
+    bool success = obs_output_start(output);
 
-	obs_log(LOG_INFO, "plugin loaded successfully (version %s)", PLUGIN_VERSION);
-	return true;
+    if (!success) {
+        const char *error = obs_output_get_last_error(output);
+        obs_log(LOG_ERROR, "Failed to start output %s", error);
+    } else {
+        obs_log(LOG_INFO, "plugin loaded successfully (version %s)", PLUGIN_VERSION);
+    }
+
+	return success;
 }
 
 void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
-    obs_output_stop(output);
-    obs_output_release(output);
+
+    my_output_stop(NULL, 0);
+    my_output_destroy(NULL);
 
 	obs_log(LOG_INFO, "plugin unloaded");
 }

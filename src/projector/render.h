@@ -24,7 +24,7 @@ typedef struct {
 } render_output;
 
 void initialize_renders();
-void activate_renders(GLFWwindow *shared_context, render_output_size *out_size);
+void activate_renders(GLFWwindow *shared_context);
 void shutdown_renders();
 
 void renders_init();
@@ -32,6 +32,8 @@ void renders_update_assets();
 void renders_cycle();
 void renders_flush_buffers();
 void renders_terminate();
+
+void renders_push_frame(void *data, int width, int line_size, int height);
 
 void renders_get_output(render_output **out);
 

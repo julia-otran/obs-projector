@@ -22,7 +22,6 @@ void render_pixel_unpack_buffer_deallocate(render_pixel_unpack_buffer_instance *
     glDeleteBuffers(1, &instance->buffers[1].gl_buffer);
     glDeleteBuffers(1, &instance->buffers[2].gl_buffer);
 
-    // TODO: destroy all other mutexes in the project. the r never deallocated
     mtx_destroy(&instance->thread_mutex);
 
     free(instance);
