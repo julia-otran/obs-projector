@@ -187,10 +187,6 @@ void my_output_destroy(void *data) {
         terminated = 1;
     }
 
-    // if (data) {
-    //     free(data);
-    // }
-
     log_debug("output destroyed");
 }
 
