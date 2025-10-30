@@ -257,9 +257,23 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 bool obs_module_load(void)
 {
-	obs_register_output(&my_output);
+    obs_register_output(&my_output);
+
     output = obs_output_create("projector", "Projector Output", NULL, NULL);
     obs_output_set_media(output, obs_get_video(), NULL);
+
+    int width = obs_output_get_width(output);
+    int height = obs_output_get_height(output);
+
+    const struct video_scale_info scale_info = {
+        .format = VIDEO_FORMAT_BGRA,
+        .width = width,
+        .height = height,
+        .range = VIDEO_RANGE_FULL,
+        .colorspace = VIDEO_CS_SRGB,
+    };
+    
+    obs_output_set_video_conversion(output, &scale_info);
     bool success = obs_output_start(output);
 
     if (!success) {
