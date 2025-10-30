@@ -14,6 +14,10 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
+
 find_package(libobs REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -26,7 +30,7 @@ link_libraries(${GLEW_LIBRARIES})
 link_libraries(${glfw3_LIBRARIES})
 link_libraries(${OpenGL_LIBRARIES})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
 if(ENABLE_FRONTEND_API)
@@ -49,7 +53,7 @@ endif()
 
 add_compile_definitions(TRILIBRARY ENABLE_LOCALES ANSI_DECLARATORS)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src/triangle src/cJSON src/tinycthread/source src/projector)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBUV_INCLUDE_DIRS} src/triangle src/cJSON src/tinycthread/source src/projector)
 
 set(
   ShaderSources 

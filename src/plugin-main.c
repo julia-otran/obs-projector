@@ -23,6 +23,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <plugin-support.h>
 #include <stdlib.h>
 
+#include <uv.h>
+
 #include "debug.h"
 #include "config-structs.h"
 #include "config.h"
@@ -32,6 +34,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "render.h"
 #include "render-obs.h"
 #include "ogl-loader.h"
+
+static uv_loop_t *loop;
 
 static int initialized = 0;
 static int configured = 0;
@@ -240,6 +244,10 @@ void my_output_data(void *data, struct video_data *frame) {
     }
 }
 
+void handle_uv_fs_event(uv_fs_event_t *handle, const char *filename, int events, int status) {
+    internal_lib_render_load_config();
+}
+
 struct obs_output_info my_output = {
         .id                   = "projector",
         .flags                = OBS_OUTPUT_VIDEO,
@@ -257,6 +265,9 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 bool obs_module_load(void)
 {
+    loop = uv_default_loop();
+    uv_run(loop, UV_RUN_DEFAULT);
+
     obs_register_output(&my_output);
 
     output = obs_output_create("projector", "Projector Output", NULL, NULL);
@@ -283,15 +294,17 @@ bool obs_module_load(void)
         obs_log(LOG_INFO, "plugin loaded successfully (version %s)", PLUGIN_VERSION);
     }
 
+    uv_fs_event_t *fs_event_req = malloc(sizeof(uv_fs_event_t));
+    uv_fs_event_init(loop, fs_event_req);
+    uv_fs_event_start(fs_event_req, handle_uv_fs_event, CONFIG_FILE, 0);
+
 	return success;
 }
 
 void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
-
-    // my_output_stop(NULL, 0);
-    // my_output_destroy(NULL);
+    uv_loop_close(loop);
 
 	obs_log(LOG_INFO, "plugin unloaded");
 }

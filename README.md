@@ -20,6 +20,12 @@ The plugin is meant to be used for blending projectors taking OBS Studio program
 
 ### Ubuntu 24.04 - CMake 3.28.3
 
+- Install `libglfw3-dev`, `libglew-dev` and `libuv1-dev`
+
+```
+sudo apt-get install libglfw3-dev libglew-dev libuv1-dev
+```
+
 - Run `cmake --preset ubuntu-x86_64`
 - Run `cmake --build --preset ubuntu-x86_64`
 - Install the plugin `.so` module.
