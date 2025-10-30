@@ -8,8 +8,6 @@
 #include "config-serialize.h"
 #include "config.h"
 
-#define DEFAULT_RENDER_NAME "Tela"
-
 static projection_config default_config;
 
 void free_config_point_mapping(config_point_mapping *in) {

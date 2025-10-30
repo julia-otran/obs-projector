@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
-#define CONFIG_FILE "projection-config.json"
+// TODO: Adjust for Windows Platform
+#define CONFIG_FILE "~/projection-config.json"
 
 #include <obs-module.h>
 #include <plugin-support.h>

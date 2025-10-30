@@ -8,9 +8,9 @@ The plugin is meant to be used for blending projectors taking OBS Studio program
 
 | Platform  | Tool   | Status    |
 |-----------|--------| --------- |
-| Windows   | Visal Studio 17 2022 | Not Tested |
-| macOS     | XCode 16.0 | Not Tested |
-| Windows, macOS  | CMake 3.30.5 | Not Tested |
+| Windows   | Visal Studio 17 2022 | Under Development |
+| macOS     | XCode 16.0 | Under Development |
+| Windows, macOS  | CMake 3.30.5 | Under Development |
 | Ubuntu 24.04 | CMake 3.28.3 | OK |
 | Ubuntu 24.04 | `ninja-build` | Not Tested |
 | Ubuntu 24.04 | `pkg-config` | Not Tested |
