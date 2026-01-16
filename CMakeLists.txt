@@ -34,7 +34,14 @@ include_directories(${OpenGL_INCLUDE_DIRS})
 link_libraries(${glfw3_LIBRARIES})
 link_libraries(${OpenGL_LIBRARIES})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
+if(APPLE)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs OpenGL glfw m PkgConfig::LIBUV)
+endif()
+
+if(NOT APPLE)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
+endif()
+
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
 if(ENABLE_FRONTEND_API)
