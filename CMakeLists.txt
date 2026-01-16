@@ -35,7 +35,7 @@ link_libraries(${glfw3_LIBRARIES})
 link_libraries(${OpenGL_LIBRARIES})
 
 if(APPLE)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs OpenGL glfw m PkgConfig::LIBUV)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC OpenGL glfw m PkgConfig::LIBUV)
 endif()
 
 if(NOT APPLE)
