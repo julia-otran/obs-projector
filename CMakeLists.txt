@@ -37,6 +37,7 @@ link_libraries(${OpenGL_LIBRARIES})
 if(APPLE)
   target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw m PkgConfig::LIBUV)
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
+  target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC /usr/local/lib)
 endif()
 
 if(NOT APPLE)
