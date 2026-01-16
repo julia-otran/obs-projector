@@ -23,10 +23,14 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 
-include_directories(${GLEW_INCLUDE_DIRS})
+if(NOT APPLE)
+  include_directories(${GLEW_INCLUDE_DIRS})
+  link_libraries(${GLEW_LIBRARIES})
+endif()
+
 include_directories(${glfw3_INCLUDE_DIRS})
 include_directories(${OpenGL_INCLUDE_DIRS})
-link_libraries(${GLEW_LIBRARIES})
+
 link_libraries(${glfw3_LIBRARIES})
 link_libraries(${OpenGL_LIBRARIES})
 
