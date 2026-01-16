@@ -18,15 +18,15 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
-find_package(libobs REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(GLEW REQUIRED)
-
 if(NOT APPLE)
+  find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   link_libraries(${GLEW_LIBRARIES})
 endif()
+
+find_package(libobs REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
 
 include_directories(${glfw3_INCLUDE_DIRS})
 include_directories(${OpenGL_INCLUDE_DIRS})
