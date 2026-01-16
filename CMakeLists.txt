@@ -15,6 +15,7 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 find_package(PkgConfig REQUIRED)
+find_package(glfw3 REQUIRED)
 
 pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
@@ -22,28 +23,54 @@ if(NOT APPLE)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   link_libraries(${GLEW_LIBRARIES})
+
+  include_directories(${glfw3_INCLUDE_DIRS})
+  link_libraries(${glfw3_LIBRARIES})
+
+  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
+endif()
+
+if(APPLE)
+  find_library(LIB_GLFW_ARM NAMES glfw PATHS /opt/homebrew/lib REQUIRED NO_DEFAULT_PATH)
+  find_library(LIB_UV_ARM NAMES uv PATHS /opt/homebrew/lib REQUIRED NO_DEFAULT_PATH)
+
+  find_library(LIB_GLFW_X86 NAMES glfw PATHS /usr/local/lib REQUIRED NO_DEFAULT_PATH)
+  find_library(LIB_UV_X86 NAMES uv PATHS /usr/local/lib REQUIRED NO_DEFAULT_PATH)
+
+  set(GLFW_LIBRARY "${CMAKE_BINARY_DIR}/libs-gen/glfw-multiarch.a")
+  set(UV_LIBRARY "${CMAKE_BINARY_DIR}/libs-gen/uv-multiarch.a")
+
+  add_custom_target(GLFW_MULTIARCH
+		DEPENDS LIB_GLFW_ARM LIB_GLFW_X86
+		BYPRODUCTS GLFW_LIBRARY
+		COMMAND lipo ${LIB_GLFW_ARM} ${LIB_GLFW_X86} -create -output "${GLFW_LIBRARY}"
+	)
+
+  add_custom_target(UV_MULTIARCH
+		DEPENDS LIB_UV_ARM LIB_UV_X86
+		BYPRODUCTS UV_LIBRARY
+		COMMAND lipo ${LIB_UV_ARM} ${LIB_UV_X86} -create -output "${UV_LIBRARY}"
+	)
+
+  add_library(glfw UNKNOWN IMPORTED)
+  add_library(uv UNKNOWN IMPORTED)
+
+  add_dependencies(glfw GLFW_MULTIARCH)
+  add_dependencies(uv UV_MULTIARCH)
+
+  set_target_properties(${LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION "${GLFW_LIBRARY}")
+  set_target_properties(${LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION "${UV_LIBRARY}")
+
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
 endif()
 
 find_package(libobs REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
 
-include_directories(${glfw3_INCLUDE_DIRS})
 include_directories(${OpenGL_INCLUDE_DIRS})
 
-link_libraries(${glfw3_LIBRARIES})
 link_libraries(${OpenGL_LIBRARIES})
-
-if(APPLE)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw m PkgConfig::LIBUV)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
-  target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC /usr/local/lib)
-endif()
-
-if(NOT APPLE)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
-endif()
 
 if(ENABLE_FRONTEND_API)
   find_package(obs-frontend-api REQUIRED)
