@@ -8,6 +8,7 @@ if (( ! ${+commands[brew]} )) {
 
 brew bundle --file ${SCRIPT_HOME}/.Brewfile
 brew bundle --file ${SCRIPT_HOME}/.Brewfile-multi
+arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 arch -x86_64 /usr/local/bin/brew bundle --file ${SCRIPT_HOME}/.Brewfile-multi
 rehash
 log_group
