@@ -17,7 +17,7 @@ add_library(${CMAKE_PROJECT_NAME} MODULE)
 find_package(PkgConfig REQUIRED)
 find_package(glfw3 REQUIRED)
 
-include_directories(${glfw3_INCLUDE_DIRS})
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${glfw3_INCLUDE_DIRS})
 
 pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
