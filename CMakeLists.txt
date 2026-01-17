@@ -17,14 +17,14 @@ add_library(${CMAKE_PROJECT_NAME} MODULE)
 find_package(PkgConfig REQUIRED)
 find_package(glfw3 REQUIRED)
 
+include_directories(${glfw3_INCLUDE_DIRS})
+
 pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
 if(NOT APPLE)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   link_libraries(${GLEW_LIBRARIES})
-
-  include_directories(${glfw3_INCLUDE_DIRS})
   link_libraries(${glfw3_LIBRARIES})
 
   target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
