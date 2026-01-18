@@ -54,15 +54,15 @@ if(APPLE)
 		COMMAND lipo ${LIB_UV_ARM} ${LIB_UV_X86} -create -output "${UV_LIBRARY}"
 	)
 
-  set_target_properties(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_LIBRARY}")
-  set_target_properties(uv PROPERTIES IMPORTED_LOCATION "${UV_LIBRARY}")
-
-  add_library(glfw UNKNOWN IMPORTED)
-  add_library(uv UNKNOWN IMPORTED)
+  set_target_properties(GLFW_MULTIARCH PROPERTIES IMPORTED_LOCATION "${GLFW_LIBRARY}")
+  set_target_properties(UV_MULTIARCH PROPERTIES IMPORTED_LOCATION "${UV_LIBRARY}")
 
   add_dependencies(${CMAKE_PROJECT_NAME} GLFW_MULTIARCH)
   add_dependencies(${CMAKE_PROJECT_NAME} UV_MULTIARCH)
 
+  link_directories("${CMAKE_BINARY_DIR}/libs-gen")
+  link_libraries(glfw uv)
+  
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
 endif()
 
