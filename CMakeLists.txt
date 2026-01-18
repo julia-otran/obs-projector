@@ -40,8 +40,8 @@ if(APPLE)
   find_library(LIB_UV_X86 NAMES uv PATHS /usr/local/lib REQUIRED NO_DEFAULT_PATH)
 
   set(MULTIARCH_LIBS_GEN_DIR "${CMAKE_BINARY_DIR}/libs-gen")
-  set(GLFW_LIBRARY "${MULTIARCH_LIBS_GEN_DIR}/glfw-multiarch.a")
-  set(UV_LIBRARY "${MULTIARCH_LIBS_GEN_DIR}/uv-multiarch.a")
+  set(GLFW_LIBRARY "${MULTIARCH_LIBS_GEN_DIR}/libglfw.a")
+  set(UV_LIBRARY "${MULTIARCH_LIBS_GEN_DIR}/libuv.a")
 
   file(MAKE_DIRECTORY "${MULTIARCH_LIBS_GEN_DIR}")
 
