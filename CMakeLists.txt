@@ -15,11 +15,12 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 find_package(PkgConfig REQUIRED)
-find_package(glfw3 REQUIRED)
-
-pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
 if(NOT APPLE)
+  find_package(glfw3 REQUIRED)
+
+  pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
+
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   link_libraries(${GLEW_LIBRARIES})
@@ -53,14 +54,14 @@ if(APPLE)
 		COMMAND lipo ${LIB_UV_ARM} ${LIB_UV_X86} -create -output "${UV_LIBRARY}"
 	)
 
-  add_library(lbglfw UNKNOWN IMPORTED)
-  add_library(lbuv UNKNOWN IMPORTED)
+  add_library(glfw UNKNOWN IMPORTED)
+  add_library(uv UNKNOWN IMPORTED)
 
-  add_dependencies(lbglfw GLFW_MULTIARCH)
-  add_dependencies(lbuv UV_MULTIARCH)
+  add_dependencies(glfw GLFW_MULTIARCH)
+  add_dependencies(uv UV_MULTIARCH)
 
-  set_target_properties(lbglfw PROPERTIES IMPORTED_LOCATION "${GLFW_LIBRARY}")
-  set_target_properties(lbuv PROPERTIES IMPORTED_LOCATION "${UV_LIBRARY}")
+  set_target_properties(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_LIBRARY}")
+  set_target_properties(uv PROPERTIES IMPORTED_LOCATION "${UV_LIBRARY}")
 
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
 endif()
