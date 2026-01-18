@@ -63,10 +63,9 @@ if(APPLE)
   add_dependencies(${CMAKE_PROJECT_NAME} GLFW_MULTIARCH)
   add_dependencies(${CMAKE_PROJECT_NAME} UV_MULTIARCH)
 
-  link_directories("${MULTIARCH_LIBS_GEN_DIR}")
-  link_libraries(glfw uv)
-  
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
+  target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "${MULTIARCH_LIBS_GEN_DIR}")
+
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL glfw uv)
 endif()
 
 find_package(libobs REQUIRED)
