@@ -17,9 +17,6 @@ add_library(${CMAKE_PROJECT_NAME} MODULE)
 find_package(PkgConfig REQUIRED)
 find_package(glfw3 REQUIRED)
 
-message("GLFW_I_DIRS=${GLFW_INCLUDE_DIRS}")
-include_directories(${glfw3_INCLUDE_DIRS})
-
 pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
 if(NOT APPLE)
@@ -33,6 +30,8 @@ if(NOT APPLE)
 endif()
 
 if(APPLE)
+  include_directories(/opt/homebrew/include)
+
   find_library(LIB_GLFW_ARM NAMES glfw PATHS /opt/homebrew/lib REQUIRED NO_DEFAULT_PATH)
   find_library(LIB_UV_ARM NAMES uv PATHS /opt/homebrew/lib REQUIRED NO_DEFAULT_PATH)
 
