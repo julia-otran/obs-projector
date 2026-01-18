@@ -39,8 +39,11 @@ if(APPLE)
   find_library(LIB_GLFW_X86 NAMES glfw PATHS /usr/local/lib REQUIRED NO_DEFAULT_PATH)
   find_library(LIB_UV_X86 NAMES uv PATHS /usr/local/lib REQUIRED NO_DEFAULT_PATH)
 
-  set(GLFW_LIBRARY "${CMAKE_BINARY_DIR}/libs-gen/glfw-multiarch.a")
-  set(UV_LIBRARY "${CMAKE_BINARY_DIR}/libs-gen/uv-multiarch.a")
+  set(MULTIARCH_LIBS_GEN_DIR "${CMAKE_BINARY_DIR}/libs-gen")
+  set(GLFW_LIBRARY "${MULTIARCH_LIBS_GEN_DIR}/glfw-multiarch.a")
+  set(UV_LIBRARY "${MULTIARCH_LIBS_GEN_DIR}/uv-multiarch.a")
+
+  file(MAKE_DIRECTORY "${MULTIARCH_LIBS_GEN_DIR}")
 
   add_custom_target(GLFW_MULTIARCH
 		DEPENDS LIB_GLFW_ARM LIB_GLFW_X86
@@ -60,7 +63,7 @@ if(APPLE)
   add_dependencies(${CMAKE_PROJECT_NAME} GLFW_MULTIARCH)
   add_dependencies(${CMAKE_PROJECT_NAME} UV_MULTIARCH)
 
-  link_directories("${CMAKE_BINARY_DIR}/libs-gen")
+  link_directories("${MULTIARCH_LIBS_GEN_DIR}")
   link_libraries(glfw uv)
   
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL)
