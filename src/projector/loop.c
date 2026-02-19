@@ -81,6 +81,7 @@ int loop(void *_) {
         register_monitor_frame();
 
         // TODO: Move to main thread
+        // TODO: FIX OSX Crash
         glfwPollEvents();
     }
 
