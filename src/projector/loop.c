@@ -97,11 +97,7 @@ int loop(void *_) {
         if (poolRunning == 0) {
             poolRunning = 1;
 
-            auto task = [](void *) {
-                poolUIEvents();
-            };
-
-            obs_queue_task(OBS_TASK_UI, task, nullptr, false);
+            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
         }
 #endif
     }
