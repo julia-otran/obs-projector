@@ -42,6 +42,8 @@ int __APPLE__pool_loop(void *_) {
             obs_queue_task(OBS_TASK_UI, __APPLE__poolUIEvents, 0, false);
         }
     }
+
+    return 0;
 }
 
 
