@@ -28,15 +28,13 @@ void __APPLE__poolUIEvents() {
 }
 
 int __APPLE__pool_loop(void *_) {
-    const struct timespec sleep_interval = {
-        .tv_nsec = 0;
-        .tv_sec = 1;
-    };
-
-    struct timespec sleep_remain;
+    struct timespec sleep_interval;
 
     while (run) {
-        thrd_sleep(&sleep_interval, &sleep_remain);
+        sleep_interval.tv_nsec = 0;
+        sleep_interval.tv_sec = 1;
+        
+        thrd_sleep(&sleep_interval, 0);
 
         if (poolRunning == 0 && run) {
             poolRunning = 1;
