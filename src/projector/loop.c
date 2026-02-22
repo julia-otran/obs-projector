@@ -33,13 +33,13 @@ int __APPLE__pool_loop(void *_) {
     while (run) {
         sleep_interval.tv_nsec = 0;
         sleep_interval.tv_sec = 1;
-        
+
         thrd_sleep(&sleep_interval, 0);
 
         if (poolRunning == 0 && run) {
             poolRunning = 1;
 
-            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
+            obs_queue_task(OBS_TASK_UI, __APPLE__poolUIEvents, 0, false);
         }
     }
 }
