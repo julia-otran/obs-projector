@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include <obs.h>
+
 #include "tinycthread.h"
 #include "debug.h"
 #include "loop.h"
@@ -16,6 +18,13 @@ static cnd_t thread_cond;
 
 static projection_config *config;
 static int pending_config_reload;
+
+static int poolRunning;
+
+void poolUIEvents() {
+    glfwPollEvents();
+    poolRunning = 0;
+}
 
 int loop(void *_) {
     time_measure* tm0 = create_measure("Renders Update Assets");
@@ -80,9 +89,21 @@ int loop(void *_) {
 
         register_monitor_frame();
 
-        // TODO: Move to main thread
-        // TODO: FIX OSX Crash
+#ifndef __APPLE__
         glfwPollEvents();
+#endif
+
+#ifdef __APPLE__
+        if (poolRunning == 0) {
+            poolRunning = 1;
+
+            auto task = [](void *) {
+                poolUIEvents();
+            };
+
+            obs_queue_task(OBS_TASK_UI, task, nullptr, false);
+        }
+#endif
     }
 
     monitors_stop();
