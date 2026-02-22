@@ -62,6 +62,14 @@ int loop(void *_) {
             cnd_signal(&thread_cond);
         }
 
+#ifdef __APPLE__
+        if (poolRunning == 0 && run) {
+            poolRunning = 1;
+
+            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
+        }
+#endif
+
         mtx_unlock(&thread_mutex);
 
         begin_measure(tm0);
@@ -91,14 +99,6 @@ int loop(void *_) {
 
 #ifndef __APPLE__
         glfwPollEvents();
-#endif
-
-#ifdef __APPLE__
-        if (poolRunning == 0) {
-            poolRunning = 1;
-
-            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
-        }
 #endif
     }
 
@@ -142,7 +142,15 @@ void main_loop_start() {
 }
 
 void main_loop_terminate() {
+#ifdef __APPLE__
+    mtx_lock(&thread_mutex);
+#endif
+
     run = 0;
+
+#ifdef __APPLE__
+    mtx_unlock(&thread_mutex);
+#endif
 
     thrd_join(thread_id, NULL);
     cnd_destroy(&thread_cond);
