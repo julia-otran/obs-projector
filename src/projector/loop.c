@@ -13,6 +13,7 @@ static int run = 0;
 static int waiting = 0;
 
 static thrd_t thread_id;
+static thrd_t __APPLE__pool_thread_id;
 static mtx_t thread_mutex;
 static cnd_t thread_cond;
 
@@ -21,10 +22,30 @@ static int pending_config_reload;
 
 static int poolRunning;
 
-void poolUIEvents() {
+void __APPLE__poolUIEvents() {
     glfwPollEvents();
     poolRunning = 0;
 }
+
+int __APPLE__pool_loop(void *_) {
+    const struct timespec sleep_interval = {
+        .tv_nsec = 0;
+        .tv_sec = 1;
+    };
+
+    struct timespec sleep_remain;
+
+    while (run) {
+        thrd_sleep(&sleep_interval, &sleep_remain);
+
+        if (poolRunning == 0 && run) {
+            poolRunning = 1;
+
+            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
+        }
+    }
+}
+
 
 int loop(void *_) {
     time_measure* tm0 = create_measure("Renders Update Assets");
@@ -62,14 +83,6 @@ int loop(void *_) {
             cnd_signal(&thread_cond);
         }
 
-#ifdef __APPLE__
-        if (poolRunning == 0 && run) {
-            poolRunning = 1;
-
-            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
-        }
-#endif
-
         mtx_unlock(&thread_mutex);
 
         begin_measure(tm0);
@@ -102,9 +115,16 @@ int loop(void *_) {
 #endif
     }
 
+    log_debug("monitors_stop\n");
     monitors_stop();
+
+    log_debug("renders_terminate.\n");
     renders_terminate();
+
+    log_debug("monitors_terminate\n");
     monitors_terminate();
+
+    log_debug("Main loop exited.\n");
 
     return 0;
 }
@@ -133,6 +153,10 @@ void main_loop_start() {
 
     thrd_create(&thread_id, loop, NULL);
 
+    #ifdef __APPLE__
+    thrd_create(&__APPLE__pool_thread_id, __APPLE__pool_loop, NULL);
+    #endif
+
     mtx_lock(&thread_mutex);
     waiting = 1;
     cnd_wait(&thread_cond, &thread_mutex);
@@ -142,19 +166,13 @@ void main_loop_start() {
 }
 
 void main_loop_terminate() {
-#ifdef __APPLE__
-    mtx_lock(&thread_mutex);
-#endif
-
     run = 0;
 
-#ifdef __APPLE__
-    mtx_unlock(&thread_mutex);
-#endif
-
+    log_debug("join main loop.\n");
     thrd_join(thread_id, NULL);
     cnd_destroy(&thread_cond);
     mtx_destroy(&thread_mutex);
+    log_debug("join main loop done.\n");
 
     config = NULL;
 }
