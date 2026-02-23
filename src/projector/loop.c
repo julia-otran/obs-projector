@@ -19,17 +19,25 @@ static cnd_t thread_cond;
 static projection_config *config;
 static int pending_config_reload;
 
-#ifdef __APPLE__
+static thrd_t pool_thread_id;
+static int pool_running;
 
-static thrd_t __APPLE__pool_thread_id;
-static int poolRunning;
-
-void __APPLE__poolUIEvents() {
+void poolUIEvents() {
     glfwPollEvents();
-    poolRunning = 0;
+    
+    if (window_should_close()) {
+        log_debug("window should close is true\n");
+        run = 0;
+
+#ifdef __APPLE__
+        obs_shutdown();
+#endif
+    }
+
+    pool_running = 0;
 }
 
-int __APPLE__pool_loop(void *_) {
+int pool_loop(void *_) {
     struct timespec sleep_interval;
 
     while (run) {
@@ -38,17 +46,15 @@ int __APPLE__pool_loop(void *_) {
 
         thrd_sleep(&sleep_interval, 0);
 
-        if (poolRunning == 0 && run) {
-            poolRunning = 1;
+        if (pool_running == 0 && run) {
+            pool_running = 1;
 
-            obs_queue_task(OBS_TASK_UI, __APPLE__poolUIEvents, 0, false);
+            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
         }
     }
 
     return 0;
 }
-
-#endif
 
 int loop(void *_) {
     time_measure* tm0 = create_measure("Renders Update Assets");
@@ -108,15 +114,6 @@ int loop(void *_) {
         renders_flush_buffers();
 
         register_monitor_frame();
-
-#ifndef __APPLE__        
-        if (window_should_close()) {
-            log_debug("window should close is true\n");
-            run = 0;
-        }
-
-        glfwPollEvents();
-#endif
     }
 
     log_debug("monitors_stop\n");
@@ -156,10 +153,7 @@ void main_loop_start() {
     run = 1;
 
     thrd_create(&thread_id, loop, NULL);
-
-    #ifdef __APPLE__
-    thrd_create(&__APPLE__pool_thread_id, __APPLE__pool_loop, NULL);
-    #endif
+    thrd_create(&pool_thread_id, pool_loop, NULL);
 
     mtx_lock(&thread_mutex);
     waiting = 1;
