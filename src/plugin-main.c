@@ -212,10 +212,11 @@ void my_output_stop(void *data, uint64_t ts) {
     context_info *info = (context_info*) data;
 
     if (configured) {
+        configured = 0;
+        
         obs_output_end_data_capture(info->output);
 
         internal_lib_render_shutdown();
-        configured = 0;
         last_width = 0;
         last_height = 0;
         config = NULL;

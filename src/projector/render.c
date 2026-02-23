@@ -15,6 +15,8 @@ static render_output *output = NULL;
 static int transfer_window_initialized;
 static GLFWwindow *transfer_window;
 
+static mtx_t transfer_window_mtx;
+
 void renders_get_output(render_output **out) {
    (*out) = output;
 }
@@ -24,6 +26,7 @@ void initialize_renders() {
 }
 
 void shutdown_renders() {
+    mtx_lock(&transfer_window_mtx);
     transfer_window_initialized = 0;
 
     render_obs_shutdown();
@@ -32,6 +35,7 @@ void shutdown_renders() {
     free(render);
 
     glfwDestroyWindow(transfer_window);
+    mtx_unlock(&transfer_window_mtx);
 }
 
 void renders_init() {
@@ -131,9 +135,13 @@ void renders_terminate() {
 }
 
 void renders_push_frame(void *data, int width, int line_size, int height) {
-    glfwMakeContextCurrent(transfer_window);
-    render_obs_push_frame(data, width, line_size, height);
-    glfwMakeContextCurrent(NULL);
+    mtx_lock(&transfer_window_mtx);
+    if (transfer_window_initialized) {
+        glfwMakeContextCurrent(transfer_window);
+        render_obs_push_frame(data, width, line_size, height);
+        glfwMakeContextCurrent(NULL);
+    }
+    mtx_unlock(&transfer_window_mtx);
 
     render->size.render_width = width;
     render->size.render_height = height;
@@ -147,6 +155,8 @@ void activate_renders(GLFWwindow *shared_context) {
 
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 0);
+    mtx_init(&transfer_window_mtx, 0);
+
     transfer_window = glfwCreateWindow(800, 600, "Projector Stream Window", NULL, shared_context);
 
     glfwMakeContextCurrent(transfer_window);

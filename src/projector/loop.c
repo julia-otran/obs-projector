@@ -28,10 +28,6 @@ void poolUIEvents() {
     if (window_should_close()) {
         log_debug("window should close is true\n");
         run = 0;
-
-#ifdef __APPLE__
-        obs_shutdown();
-#endif
     }
 
     pool_running = 0;
@@ -161,6 +157,7 @@ void main_loop_start() {
     waiting = 0;
     mtx_unlock(&thread_mutex);
 
+    log_debug("main loop start done.\n");
 }
 
 void main_loop_terminate() {
