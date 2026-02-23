@@ -63,9 +63,11 @@ void glfwIntMonitorCallback(GLFWmonitor* monitor, int event) {
 }
 
 void internal_lib_render_shutdown() {
+    void *test = NULL;
     log_debug("Shutting down main loop...");
     main_loop_terminate();
 
+    (*test) = 1;
     log_debug("Shutting down renders...");
     shutdown_renders();
 
