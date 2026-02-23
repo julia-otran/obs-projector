@@ -158,7 +158,7 @@ void main_loop_start() {
     thrd_create(&thread_id, loop, NULL);
 
     #ifdef __APPLE__
-    thrd_create(&__APPLE__pool_thread_id, __APPLE__pool_loop, NULL);
+    // thrd_create(&__APPLE__pool_thread_id, __APPLE__pool_loop, NULL);
     #endif
 
     mtx_lock(&thread_mutex);

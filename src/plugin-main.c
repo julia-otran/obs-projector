@@ -67,7 +67,7 @@ void internal_lib_render_shutdown() {
     log_debug("Shutting down main loop...");
     main_loop_terminate();
 
-    (*test) = 1;
+    // (*test) = 1;
     log_debug("Shutting down renders...");
     shutdown_renders();
 
