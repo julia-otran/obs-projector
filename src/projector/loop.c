@@ -108,6 +108,7 @@ int loop(void *_) {
         renders_flush_buffers();
 
         if (window_should_close()) {
+            log_debug("window should close is true\n");
             run = 0;
         }
 
