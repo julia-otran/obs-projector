@@ -156,14 +156,14 @@ const char* my_output_name(void* type_data) {
 void* my_output_create(obs_data_t *settings, obs_output_t *output) {
     terminated = 0;
 
-    if (!glfwInit()) {
-        return (void*)0;
-    }
+    // if (!glfwInit()) {
+    //     return (void*)0;
+    // }
 
     config = NULL;
 
-    glfwSetErrorCallback(glfwIntErrorCallback);
-    glfwSetMonitorCallback(glfwIntMonitorCallback);
+    // glfwSetErrorCallback(glfwIntErrorCallback);
+    // glfwSetMonitorCallback(glfwIntMonitorCallback);
 
     initialized = 1;
 
@@ -190,7 +190,7 @@ void my_output_destroy(void *data) {
     }
     
     if (!terminated) {
-        glfwTerminate();
+        // glfwTerminate();
         terminated = 1;
     }
 
@@ -250,7 +250,7 @@ void my_output_data(void *data, struct video_data *frame) {
 }
 
 void handle_uv_fs_event(uv_fs_event_t *handle, const char *filename, int events, int status) {
-    internal_lib_render_load_config();
+    // internal_lib_render_load_config();
 }
 
 struct obs_output_info my_output = {
@@ -292,16 +292,18 @@ bool obs_module_load(void)
     obs_output_set_video_conversion(output, &scale_info);
     bool success = obs_output_start(output);
 
+    obs_log(LOG_INFO, "plugin started successfully");
+
+    uv_fs_event_t *fs_event_req = malloc(sizeof(uv_fs_event_t));
+    uv_fs_event_init(loop, fs_event_req);
+    uv_fs_event_start(fs_event_req, handle_uv_fs_event, CONFIG_FILE, 0);
+
     if (!success) {
         const char *error = obs_output_get_last_error(output);
         obs_log(LOG_ERROR, "Failed to start output %s", error);
     } else {
         obs_log(LOG_INFO, "plugin loaded successfully (version %s)", PLUGIN_VERSION);
     }
-
-    uv_fs_event_t *fs_event_req = malloc(sizeof(uv_fs_event_t));
-    uv_fs_event_init(loop, fs_event_req);
-    uv_fs_event_start(fs_event_req, handle_uv_fs_event, CONFIG_FILE, 0);
 
 	return success;
 }
