@@ -184,7 +184,7 @@ void my_output_destroy(void *data) {
     log_debug("plugin will destroy");
     
     if (configured) {
-        internal_lib_render_shutdown();
+        // internal_lib_render_shutdown();
         configured = 0;
         config = NULL;
     }
@@ -200,7 +200,9 @@ void my_output_destroy(void *data) {
 bool my_output_start(void *data) {
     context_info *info = (context_info*) data;
 
-    internal_lib_render_load_config();
+    // internal_lib_render_load_config();
+    // TODO: Remove.
+    configured = 1;
 
     obs_output_begin_data_capture(info->output, 0);
     return true;
@@ -216,7 +218,7 @@ void my_output_stop(void *data, uint64_t ts) {
         
         obs_output_end_data_capture(info->output);
 
-        internal_lib_render_shutdown();
+        // internal_lib_render_shutdown();
         last_width = 0;
         last_height = 0;
         config = NULL;
@@ -238,11 +240,11 @@ void my_output_data(void *data, struct video_data *frame) {
     uint8_t *video_data = frame->data[0];
 
     if (width && height && data && frame->linesize[0]) {
-        renders_push_frame(video_data, width, frame->linesize[0], height);
+        // renders_push_frame(video_data, width, frame->linesize[0], height);
         if (width != last_width || height != last_height) {
             last_width = width;
             last_height = height;
-            main_loop_schedule_config_reload(config);
+            // main_loop_schedule_config_reload(config);
         }
     }
 }
