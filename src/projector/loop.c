@@ -13,13 +13,15 @@ static int run = 0;
 static int waiting = 0;
 
 static thrd_t thread_id;
-static thrd_t __APPLE__pool_thread_id;
 static mtx_t thread_mutex;
 static cnd_t thread_cond;
 
 static projection_config *config;
 static int pending_config_reload;
 
+#ifdef __APPLE__
+
+static thrd_t __APPLE__pool_thread_id;
 static int poolRunning;
 
 void __APPLE__poolUIEvents() {
@@ -46,6 +48,7 @@ int __APPLE__pool_loop(void *_) {
     return 0;
 }
 
+#endif
 
 int loop(void *_) {
     time_measure* tm0 = create_measure("Renders Update Assets");
