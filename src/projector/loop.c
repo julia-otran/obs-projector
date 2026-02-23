@@ -107,14 +107,14 @@ int loop(void *_) {
         monitors_set_share_context();
         renders_flush_buffers();
 
+        register_monitor_frame();
+
+#ifndef __APPLE__        
         if (window_should_close()) {
             log_debug("window should close is true\n");
             run = 0;
         }
 
-        register_monitor_frame();
-
-#ifndef __APPLE__
         glfwPollEvents();
 #endif
     }
@@ -158,7 +158,7 @@ void main_loop_start() {
     thrd_create(&thread_id, loop, NULL);
 
     #ifdef __APPLE__
-    // thrd_create(&__APPLE__pool_thread_id, __APPLE__pool_loop, NULL);
+    thrd_create(&__APPLE__pool_thread_id, __APPLE__pool_loop, NULL);
     #endif
 
     mtx_lock(&thread_mutex);
