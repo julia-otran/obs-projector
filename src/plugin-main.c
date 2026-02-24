@@ -24,6 +24,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <stdlib.h>
 
 #include <uv.h>
+#include <tinycthread.h>
 
 #include "debug.h"
 #include "config-structs.h"
@@ -59,6 +60,42 @@ void glfwIntMonitorCallback(GLFWmonitor* monitor, int event) {
         monitors_reload();
         monitors_adjust_windows(config);
     }
+}
+
+static thrd_t pool_thread_id;
+static int pool_running;
+static int pool_thread_running;
+
+void pool_ui_events() {
+    glfwPollEvents();
+    
+    if (window_should_close()) {
+        log_debug("window should close is true\n");
+        obs_output_stop(output);
+        obs_output_release(output);
+        output = NULL;
+    }
+
+    pool_running = 0;
+}
+
+int pool_loop(void *_) {
+    struct timespec sleep_interval;
+
+    while (pool_thread_running) {
+        sleep_interval.tv_nsec = 0;
+        sleep_interval.tv_sec = 1;
+
+        thrd_sleep(&sleep_interval, 0);
+
+        if (pool_running == 0 && pool_thread_running) {
+            pool_running = 1;
+
+            obs_queue_task(OBS_TASK_UI, pool_ui_events, 0, false);
+        }
+    }
+
+    return 0;
 }
 
 void internal_lib_render_shutdown() {
@@ -161,6 +198,9 @@ void* my_output_create(obs_data_t *settings, obs_output_t *output) {
         glfwSetErrorCallback(glfwIntErrorCallback);
         glfwSetMonitorCallback(glfwIntMonitorCallback);
 
+        pool_thread_running = 1;
+        thrd_create(&pool_thread_id, pool_loop, NULL);
+
         obs_log(LOG_INFO, "glfw initialized");
     } else {
         obs_log(LOG_INFO, "Failed to initialize glfw");
@@ -193,6 +233,7 @@ void my_output_destroy(void *data) {
 
     if (initialized) {
         initialized = 0;
+        pool_thread_running = 0;
         log_debug("terminating glfw");
         glfwTerminate();
         obs_log(LOG_INFO, "glfw terminated");
@@ -324,8 +365,11 @@ void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
 
-    obs_output_stop(output);
-    obs_output_release(output);
+    if (output) {
+        obs_output_stop(output);
+        obs_output_release(output);
+        output = NULL;
+    }
 
     uv_loop_close(loop);
 

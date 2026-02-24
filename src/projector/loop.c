@@ -19,39 +19,6 @@ static cnd_t thread_cond;
 static projection_config *config;
 static int pending_config_reload;
 
-static thrd_t pool_thread_id;
-static int pool_running;
-
-void poolUIEvents() {
-    glfwPollEvents();
-    
-    if (window_should_close()) {
-        log_debug("window should close is true\n");
-        run = 0;
-    }
-
-    pool_running = 0;
-}
-
-int pool_loop(void *_) {
-    struct timespec sleep_interval;
-
-    while (run) {
-        sleep_interval.tv_nsec = 0;
-        sleep_interval.tv_sec = 1;
-
-        thrd_sleep(&sleep_interval, 0);
-
-        if (pool_running == 0 && run) {
-            pool_running = 1;
-
-            obs_queue_task(OBS_TASK_UI, poolUIEvents, 0, false);
-        }
-    }
-
-    return 0;
-}
-
 int loop(void *_) {
     time_measure* tm0 = create_measure("Renders Update Assets");
     time_measure* tm1 = create_measure("Renders Cycle");
@@ -149,7 +116,6 @@ void main_loop_start() {
     run = 1;
 
     thrd_create(&thread_id, loop, NULL);
-    thrd_create(&pool_thread_id, pool_loop, NULL);
 
     mtx_lock(&thread_mutex);
     waiting = 1;
