@@ -39,7 +39,6 @@ static uv_loop_t *loop;
 
 static int initialized = 0;
 static int configured = 0;
-static int terminated = 0;
 
 static int last_width = 0;
 static int last_height = 0;
@@ -154,18 +153,7 @@ const char* my_output_name(void* type_data) {
 }
 
 void* my_output_create(obs_data_t *settings, obs_output_t *output) {
-    terminated = 0;
-
-    // if (!glfwInit()) {
-    //     return (void*)0;
-    // }
-
     config = NULL;
-
-    // glfwSetErrorCallback(glfwIntErrorCallback);
-    // glfwSetMonitorCallback(glfwIntMonitorCallback);
-
-    initialized = 1;
 
     context_info *info = bzalloc(sizeof(context_info));
     info->output = output;
@@ -187,11 +175,6 @@ void my_output_destroy(void *data) {
         // internal_lib_render_shutdown();
         configured = 0;
         config = NULL;
-    }
-    
-    if (!terminated) {
-        // glfwTerminate();
-        terminated = 1;
     }
 
     log_debug("output destroyed");
@@ -270,6 +253,17 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 bool obs_module_load(void)
 {
+    if (glfwInit()) {
+        initialized = 1;
+        obs_log(LOG_INFO, "glfw initialized");
+    } else {
+        obs_log(LOG_INFO, "Failed to initialize glfw");
+        return 0;
+    }
+
+    glfwSetErrorCallback(glfwIntErrorCallback);
+    glfwSetMonitorCallback(glfwIntMonitorCallback);
+
     loop = uv_default_loop();
     uv_run(loop, UV_RUN_DEFAULT);
 
@@ -311,7 +305,15 @@ bool obs_module_load(void)
 void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
-    uv_loop_close(loop);
+    
+    if (initialized) {
+        glfwTerminate();
+        obs_log(LOG_INFO, "glfw terminated");
+
+        uv_loop_close(loop);
+    } else {
+        obs_log(LOG_INFO, "Try to unload not initialized plugin");
+    }
 
 	obs_log(LOG_INFO, "plugin unloaded");
 }
