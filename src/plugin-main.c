@@ -62,11 +62,9 @@ void glfwIntMonitorCallback(GLFWmonitor* monitor, int event) {
 }
 
 void internal_lib_render_shutdown() {
-    int *test = NULL;
     log_debug("Shutting down main loop...");
     main_loop_terminate();
 
-    // (*test) = 1;
     log_debug("Shutting down renders...");
     shutdown_renders();
 
@@ -155,6 +153,20 @@ const char* my_output_name(void* type_data) {
 void* my_output_create(obs_data_t *settings, obs_output_t *output) {
     config = NULL;
 
+    obs_log(LOG_INFO, "Output will be created");
+
+    if (glfwInit()) {
+        initialized = 1;
+
+        glfwSetErrorCallback(glfwIntErrorCallback);
+        glfwSetMonitorCallback(glfwIntMonitorCallback);
+
+        obs_log(LOG_INFO, "glfw initialized");
+    } else {
+        obs_log(LOG_INFO, "Failed to initialize glfw");
+        return (void*)NULL;
+    }
+
     context_info *info = bzalloc(sizeof(context_info));
     info->output = output;
 
@@ -169,30 +181,47 @@ void my_output_update(void *data, obs_data_t *settings) {
 }
 
 void my_output_destroy(void *data) {
-    log_debug("plugin will destroy");
+    log_debug("output will destroy");
     
     if (configured) {
-        // internal_lib_render_shutdown();
+        internal_lib_render_shutdown();
+
+        log_debug("lib render shutdown finish");
         configured = 0;
         config = NULL;
+    }
+
+    if (initialized) {
+        initialized = 0;
+        log_debug("terminating glfw");
+        // glfwTerminate();
+        obs_log(LOG_INFO, "glfw terminated");
+    } else {
+        obs_log(LOG_INFO, "Try to destroy not created output");
     }
 
     log_debug("output destroyed");
 }
 
 bool my_output_start(void *data) {
+    if (!initialized) {
+        return false;
+    }
+
     context_info *info = (context_info*) data;
 
-    // internal_lib_render_load_config();
-    // TODO: Remove.
-    configured = 1;
+    internal_lib_render_load_config();
 
     obs_output_begin_data_capture(info->output, 0);
     return true;
 }
 
 void my_output_stop(void *data, uint64_t ts) {
-    obs_log(LOG_INFO, "plugin will stop");
+    obs_log(LOG_INFO, "output will stop");
+
+    if (!initialized) {
+        return;
+    }
 
     context_info *info = (context_info*) data;
 
@@ -201,13 +230,13 @@ void my_output_stop(void *data, uint64_t ts) {
         
         obs_output_end_data_capture(info->output);
 
-        // internal_lib_render_shutdown();
+        internal_lib_render_shutdown();
         last_width = 0;
         last_height = 0;
         config = NULL;
     }
 
-    log_debug("plugin stopped");
+    log_debug("output stopped");
 }
 
 void my_output_data(void *data, struct video_data *frame) {
@@ -223,17 +252,17 @@ void my_output_data(void *data, struct video_data *frame) {
     uint8_t *video_data = frame->data[0];
 
     if (width && height && data && frame->linesize[0]) {
-        // renders_push_frame(video_data, width, frame->linesize[0], height);
+        renders_push_frame(video_data, width, frame->linesize[0], height);
         if (width != last_width || height != last_height) {
             last_width = width;
             last_height = height;
-            // main_loop_schedule_config_reload(config);
+            main_loop_schedule_config_reload(config);
         }
     }
 }
 
 void handle_uv_fs_event(uv_fs_event_t *handle, const char *filename, int events, int status) {
-    // internal_lib_render_load_config();
+    internal_lib_render_load_config();
 }
 
 struct obs_output_info my_output = {
@@ -253,17 +282,6 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 bool obs_module_load(void)
 {
-    if (glfwInit()) {
-        initialized = 1;
-        obs_log(LOG_INFO, "glfw initialized");
-    } else {
-        obs_log(LOG_INFO, "Failed to initialize glfw");
-        return 0;
-    }
-
-    glfwSetErrorCallback(glfwIntErrorCallback);
-    glfwSetMonitorCallback(glfwIntMonitorCallback);
-
     loop = uv_default_loop();
     uv_run(loop, UV_RUN_DEFAULT);
 
@@ -305,15 +323,11 @@ bool obs_module_load(void)
 void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
-    
-    if (initialized) {
-        glfwTerminate();
-        obs_log(LOG_INFO, "glfw terminated");
 
-        uv_loop_close(loop);
-    } else {
-        obs_log(LOG_INFO, "Try to unload not initialized plugin");
-    }
+    obs_output_stop(output);
+    obs_output_release(output);
+
+    uv_loop_close(loop);
 
 	obs_log(LOG_INFO, "plugin unloaded");
 }
