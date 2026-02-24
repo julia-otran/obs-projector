@@ -155,17 +155,17 @@ void* my_output_create(obs_data_t *settings, obs_output_t *output) {
 
     obs_log(LOG_INFO, "Output will be created");
 
-    // if (glfwInit()) {
-    //     // initialized = 1;
+    if (glfwInit()) {
+        initialized = 1;
 
-    //     glfwSetErrorCallback(glfwIntErrorCallback);
-    //     glfwSetMonitorCallback(glfwIntMonitorCallback);
+        glfwSetErrorCallback(glfwIntErrorCallback);
+        glfwSetMonitorCallback(glfwIntMonitorCallback);
 
-    //     obs_log(LOG_INFO, "glfw initialized");
-    // } else {
-    //     obs_log(LOG_INFO, "Failed to initialize glfw");
-    //     return (void*)NULL;
-    // }
+        obs_log(LOG_INFO, "glfw initialized");
+    } else {
+        obs_log(LOG_INFO, "Failed to initialize glfw");
+        return (void*)NULL;
+    }
 
     context_info *info = bzalloc(sizeof(context_info));
     info->output = output;
@@ -194,7 +194,7 @@ void my_output_destroy(void *data) {
     if (initialized) {
         initialized = 0;
         log_debug("terminating glfw");
-        // glfwTerminate();
+        glfwTerminate();
         obs_log(LOG_INFO, "glfw terminated");
     } else {
         obs_log(LOG_INFO, "Try to destroy not created output");
@@ -205,8 +205,7 @@ void my_output_destroy(void *data) {
 
 bool my_output_start(void *data) {
     if (!initialized) {
-        // return false;
-        return true;
+        return false;
     }
 
     context_info *info = (context_info*) data;
