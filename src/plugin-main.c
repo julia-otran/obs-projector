@@ -156,7 +156,7 @@ void* my_output_create(obs_data_t *settings, obs_output_t *output) {
     obs_log(LOG_INFO, "Output will be created");
 
     if (glfwInit()) {
-        initialized = 1;
+        // initialized = 1;
 
         glfwSetErrorCallback(glfwIntErrorCallback);
         glfwSetMonitorCallback(glfwIntMonitorCallback);
@@ -205,7 +205,8 @@ void my_output_destroy(void *data) {
 
 bool my_output_start(void *data) {
     if (!initialized) {
-        return false;
+        // return false;
+        return true;
     }
 
     context_info *info = (context_info*) data;
@@ -262,7 +263,7 @@ void my_output_data(void *data, struct video_data *frame) {
 }
 
 void handle_uv_fs_event(uv_fs_event_t *handle, const char *filename, int events, int status) {
-    internal_lib_render_load_config();
+    // internal_lib_render_load_config();
 }
 
 struct obs_output_info my_output = {
