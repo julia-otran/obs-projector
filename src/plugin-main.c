@@ -329,11 +329,12 @@ bool obs_module_load(void)
 {
     loop = uv_default_loop();
     uv_run(loop, UV_RUN_DEFAULT);
+    glfwInit();
 
-    obs_register_output(&my_output);
+    // obs_register_output(&my_output);
 
-    output = obs_output_create("projector", "Projector Output", NULL, NULL);
-    obs_output_set_media(output, obs_get_video(), NULL);
+    // output = obs_output_create("projector", "Projector Output", NULL, NULL);
+    // obs_output_set_media(output, obs_get_video(), NULL);
 
     int width = obs_output_get_width(output);
     int height = obs_output_get_height(output);
@@ -346,14 +347,16 @@ bool obs_module_load(void)
         .colorspace = VIDEO_CS_SRGB,
     };
     
-    obs_output_set_video_conversion(output, &scale_info);
-    bool success = obs_output_start(output);
+    // obs_output_set_video_conversion(output, &scale_info);
+    bool success = 1; // obs_output_start(output);
 
     obs_log(LOG_INFO, "plugin started successfully");
 
     uv_fs_event_t *fs_event_req = malloc(sizeof(uv_fs_event_t));
     uv_fs_event_init(loop, fs_event_req);
     uv_fs_event_start(fs_event_req, handle_uv_fs_event, CONFIG_FILE, 0);
+
+    glfwTerminate();
 
     if (!success) {
         const char *error = obs_output_get_last_error(output);
@@ -369,11 +372,11 @@ void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
 
-    if (output) {
-        obs_output_stop(output);
-        obs_output_release(output);
-        output = NULL;
-    }
+    // if (output) {
+    //     obs_output_stop(output);
+    //     obs_output_release(output);
+    //     output = NULL;
+    // }
 
     uv_loop_close(loop);
 
