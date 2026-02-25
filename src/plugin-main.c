@@ -67,6 +67,10 @@ static int pool_running;
 static int pool_thread_running;
 
 void pool_ui_events() {
+    if (pool_thread_running == 0) {
+        return;
+    }
+    
     glfwPollEvents();
     
     if (window_should_close()) {
