@@ -333,7 +333,7 @@ bool obs_module_load(void)
     uv_run(loop, UV_RUN_DEFAULT);
 
     [NSApplication sharedApplication];
-    NSApplicationDelegate oldDelegate = [NSApp delegate];
+    id<NSApplicationDelegate> oldDelegate = [NSApp delegate];
 
     glfwInit();
 
