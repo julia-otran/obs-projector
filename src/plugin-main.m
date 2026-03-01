@@ -241,7 +241,12 @@ void my_output_destroy(void *data) {
         initialized = 0;
         pool_thread_running = 0;
         log_debug("terminating glfw");
+
+        id<NSApplicationDelegate> oldDelegate = [NSApp delegate];
         glfwTerminate();
+        [NSApp setDelegate:oldDelegate];
+        
+
         obs_log(LOG_INFO, "glfw terminated");
     } else {
         obs_log(LOG_INFO, "Try to destroy not created output");
@@ -333,14 +338,17 @@ bool obs_module_load(void)
     uv_run(loop, UV_RUN_DEFAULT);
 
     [NSApplication sharedApplication];
+    // Restoring the delegate after glfwTerminate works.
+    // Now, need to test if we can build our own app delegate that delegates things
+    // to both glfw and qt delegates
+    // However if Qt somewhere is getting the delegate ref and expecting to be
+    // a Qt delegate things will get CrAzY
     id<NSApplicationDelegate> oldDelegate = [NSApp delegate];
 
-    glfwInit();
+    obs_register_output(&my_output);
 
-    // obs_register_output(&my_output);
-
-    // output = obs_output_create("projector", "Projector Output", NULL, NULL);
-    // obs_output_set_media(output, obs_get_video(), NULL);
+    output = obs_output_create("projector", "Projector Output", NULL, NULL);
+    obs_output_set_media(output, obs_get_video(), NULL);
 
     int width = obs_output_get_width(output);
     int height = obs_output_get_height(output);
@@ -353,16 +361,14 @@ bool obs_module_load(void)
         .colorspace = VIDEO_CS_SRGB,
     };
     
-    // obs_output_set_video_conversion(output, &scale_info);
-    bool success = 1; // obs_output_start(output);
+    obs_output_set_video_conversion(output, &scale_info);
+    bool success = obs_output_start(output);
 
     obs_log(LOG_INFO, "plugin started successfully");
 
     uv_fs_event_t *fs_event_req = malloc(sizeof(uv_fs_event_t));
     uv_fs_event_init(loop, fs_event_req);
     uv_fs_event_start(fs_event_req, handle_uv_fs_event, CONFIG_FILE, 0);
-
-    glfwTerminate();
 
     [NSApp setDelegate:oldDelegate];
 
@@ -380,11 +386,11 @@ void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
 
-    // if (output) {
-    //     obs_output_stop(output);
-    //     obs_output_release(output);
-    //     output = NULL;
-    // }
+    if (output) {
+        obs_output_stop(output);
+        obs_output_release(output);
+        output = NULL;
+    }
 
     uv_loop_close(loop);
 
