@@ -413,9 +413,8 @@ void my_output_destroy(void *data) {
         log_debug("terminating glfw");
 
         id<NSApplicationDelegate> oldDelegate = [NSApp delegate];
-        ProjectorApplicationDelegate *appDelegate = (ProjectorApplicationDelegate *)oldDelegate;
         glfwTerminate();
-        [NSApp setDelegate:appDelegate.qtDelegate];
+        [NSApp setDelegate:oldDelegate];
         
 
         obs_log(LOG_INFO, "glfw terminated");
