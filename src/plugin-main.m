@@ -38,6 +38,138 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "render-obs.h"
 #include "ogl-loader.h"
 
+@interface ProjectorApplicationDelegate : NSObject<NSApplicationDelegate>
+@property (nonatomic, strong) id<GLFWApplicationDelegate> glfwDelegate;
+@property (nonatomic, strong) id<GLFWApplicationDelegate> qtDelegate;
+@end
+
+@implementation ProjectorApplicationDelegate 
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+{
+    return [qtDelegate applicationShouldTerminate:sender];
+}
+
+- (void)applicationDidChangeScreenParameters:(NSNotification *) notification
+{
+    [glfwDelegate applicationDidChangeScreenParameters:notification];
+    [qtDelegate applicationDidChangeScreenParameters:notification];
+}
+
+- (void)applicationWillFinishLaunching:(NSNotification *)notification
+{
+    [qtDelegate applicationWillFinishLaunching:notification];
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+    [qtDelegate applicationDidFinishLaunching:notification];
+}
+
+- (void)applicationWillHide:(NSNotification *)notification
+{
+    [qtDelegate applicationWillHide:notification];
+}
+
+- (void)applicationDidHide:(NSNotification *)notification
+{
+    [qtDelegate applicationDidHide:notification];
+}
+
+- (void)applicationWillUnhide:(NSNotification *)notification
+{
+    [qtDelegate applicationWillUnhide:notification];
+}
+
+- (void)applicationDidUnhide:(NSNotification *)notification
+{
+    [qtDelegate applicationDidUnhide:notification];
+}
+
+- (void)applicationWillUpdate:(NSNotification *)notification
+{
+    [qtDelegate applicationWillUpdate:notification];
+}
+
+- (void)applicationDidUpdate:(NSNotification *)notification
+{
+    [qtDelegate applicationDidUpdate:notification];
+}
+
+// Additional NSApplicationDelegate methods forwarded to qtDelegate
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    [qtDelegate applicationWillTerminate:notification];
+}
+
+- (void)applicationWillBecomeActive:(NSNotification *)notification
+{
+    [qtDelegate applicationWillBecomeActive:notification];
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification
+{
+    [qtDelegate applicationDidBecomeActive:notification];
+}
+
+- (void)applicationWillResignActive:(NSNotification *)notification
+{
+    [qtDelegate applicationWillResignActive:notification];
+}
+
+- (void)applicationDidResignActive:(NSNotification *)notification
+{
+    [qtDelegate applicationDidResignActive:notification];
+}
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+{
+    if ([qtDelegate respondsToSelector:@selector(applicationShouldTerminateAfterLastWindowClosed:)]) {
+        return [qtDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
+    }
+    return NO;
+}
+
+- (BOOL)application:(NSApplication *)application openFile:(NSString *)filename
+{
+    if ([qtDelegate respondsToSelector:@selector(application:openFile:)]) {
+        return [qtDelegate application:application openFile:filename];
+    }
+    return NO;
+}
+
+- (void)application:(NSApplication *)application openFiles:(NSArray<NSString *> *)filenames
+{
+    if ([qtDelegate respondsToSelector:@selector(application:openFiles:)]) {
+        [qtDelegate application:application openFiles:filenames];
+    }
+}
+
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
+{
+    if ([qtDelegate respondsToSelector:@selector(application:openURLs:)]) {
+        [qtDelegate application:application openURLs:urls];
+    }
+}
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)application hasVisibleWindows:(BOOL)flag
+{
+    if ([qtDelegate respondsToSelector:@selector(applicationShouldHandleReopen:hasVisibleWindows:)]) {
+        return [qtDelegate applicationShouldHandleReopen:application hasVisibleWindows:flag];
+    }
+    return NO;
+}
+
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender
+{
+    if ([qtDelegate respondsToSelector:@selector(applicationDockMenu:)]) {
+        return [qtDelegate applicationDockMenu:sender];
+    }
+    return nil;
+}
+
+@end
+
 static uv_loop_t *loop;
 
 static int initialized = 0;
@@ -243,8 +375,9 @@ void my_output_destroy(void *data) {
         log_debug("terminating glfw");
 
         id<NSApplicationDelegate> oldDelegate = [NSApp delegate];
+        ProjectorApplicationDelegate *appDelegate = (ProjectorApplicationDelegate *)oldDelegate;
         glfwTerminate();
-        [NSApp setDelegate:oldDelegate];
+        [NSApp setDelegate:appDelegate.qtDelegate];
         
 
         obs_log(LOG_INFO, "glfw terminated");
@@ -314,7 +447,7 @@ void my_output_data(void *data, struct video_data *frame) {
 }
 
 void handle_uv_fs_event(uv_fs_event_t *handle, const char *filename, int events, int status) {
-    // internal_lib_render_load_config();
+    internal_lib_render_load_config();
 }
 
 struct obs_output_info my_output = {
@@ -343,7 +476,7 @@ bool obs_module_load(void)
     // to both glfw and qt delegates
     // However if Qt somewhere is getting the delegate ref and expecting to be
     // a Qt delegate things will get CrAzY
-    id<NSApplicationDelegate> oldDelegate = [NSApp delegate];
+    id<NSApplicationDelegate> qtDelegate = [NSApp delegate];
 
     obs_register_output(&my_output);
 
@@ -364,13 +497,19 @@ bool obs_module_load(void)
     obs_output_set_video_conversion(output, &scale_info);
     bool success = obs_output_start(output);
 
+    id<NSApplicationDelegate> glfwDelegate = [NSApp delegate];
+
+    ProjectorApplicationDelegate *appDelegate = [[ProjectorApplicationDelegate alloc] init];
+    appDelegate.glfwDelegate = glfwDelegate;
+    appDelegate.qtDelegate = qtDelegate;
+    
+    [NSApp setDelegate:appDelegate];
+
     obs_log(LOG_INFO, "plugin started successfully");
 
     uv_fs_event_t *fs_event_req = malloc(sizeof(uv_fs_event_t));
     uv_fs_event_init(loop, fs_event_req);
     uv_fs_event_start(fs_event_req, handle_uv_fs_event, CONFIG_FILE, 0);
-
-    [NSApp setDelegate:oldDelegate];
 
     if (!success) {
         const char *error = obs_output_get_last_error(output);

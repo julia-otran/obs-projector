@@ -307,7 +307,7 @@ void my_output_data(void *data, struct video_data *frame) {
 }
 
 void handle_uv_fs_event(uv_fs_event_t *handle, const char *filename, int events, int status) {
-    // internal_lib_render_load_config();
+    internal_lib_render_load_config();
 }
 
 struct obs_output_info my_output = {
@@ -331,10 +331,10 @@ bool obs_module_load(void)
     uv_run(loop, UV_RUN_DEFAULT);
     glfwInit();
 
-    // obs_register_output(&my_output);
+    obs_register_output(&my_output);
 
-    // output = obs_output_create("projector", "Projector Output", NULL, NULL);
-    // obs_output_set_media(output, obs_get_video(), NULL);
+    output = obs_output_create("projector", "Projector Output", NULL, NULL);
+    obs_output_set_media(output, obs_get_video(), NULL);
 
     int width = obs_output_get_width(output);
     int height = obs_output_get_height(output);
@@ -347,8 +347,8 @@ bool obs_module_load(void)
         .colorspace = VIDEO_CS_SRGB,
     };
     
-    // obs_output_set_video_conversion(output, &scale_info);
-    bool success = 1; // obs_output_start(output);
+    obs_output_set_video_conversion(output, &scale_info);
+    bool success = obs_output_start(output);
 
     obs_log(LOG_INFO, "plugin started successfully");
 
@@ -372,11 +372,11 @@ void obs_module_unload(void)
 {
     obs_log(LOG_INFO, "plugin will unload");
 
-    // if (output) {
-    //     obs_output_stop(output);
-    //     obs_output_release(output);
-    //     output = NULL;
-    // }
+    if (output) {
+        obs_output_stop(output);
+        obs_output_release(output);
+        output = NULL;
+    }
 
     uv_loop_close(loop);
 
