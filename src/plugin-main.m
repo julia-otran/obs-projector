@@ -47,125 +47,175 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    return [_qtDelegate applicationShouldTerminate:sender];
+    [NSApp setDelegate:_qtDelegate];
+    NSApplicationTerminateReply qtReply = [_qtDelegate applicationShouldTerminate:sender];
+    [NSApp setDelegate:self];
+    return qtReply;
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *) notification
 {
     [_glfwDelegate applicationDidChangeScreenParameters:notification];
+
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidChangeScreenParameters:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillFinishLaunching:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidFinishLaunching:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationWillHide:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillHide:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationDidHide:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidHide:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationWillUnhide:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillUnhide:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidUnhide:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationWillUpdate:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillUpdate:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationDidUpdate:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidUpdate:notification];
+    [NSApp setDelegate:self];
 }
 
 // Additional NSApplicationDelegate methods forwarded to qtDelegate
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillTerminate:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillBecomeActive:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidBecomeActive:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationWillResignActive:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationWillResignActive:notification];
+    [NSApp setDelegate:self];
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification
 {
+    [NSApp setDelegate:_qtDelegate];
     [_qtDelegate applicationDidResignActive:notification];
+    [NSApp setDelegate:self];
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
+    BOOL qtResult = NO;
+    [NSApp setDelegate:_qtDelegate];
     if ([_qtDelegate respondsToSelector:@selector(applicationShouldTerminateAfterLastWindowClosed:)]) {
-        return [_qtDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
+        qtResult = [_qtDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
     }
-    return NO;
+    [NSApp setDelegate:self];
+    return qtResult;
 }
 
 - (BOOL)application:(NSApplication *)application openFile:(NSString *)filename
 {
+    BOOL qtResult = NO;
+    [NSApp setDelegate:_qtDelegate];
     if ([_qtDelegate respondsToSelector:@selector(application:openFile:)]) {
-        return [_qtDelegate application:application openFile:filename];
+        qtResult = [_qtDelegate application:application openFile:filename];
     }
-    return NO;
+    [NSApp setDelegate:self];
+    return qtResult;
 }
 
 - (void)application:(NSApplication *)application openFiles:(NSArray<NSString *> *)filenames
 {
+    [NSApp setDelegate:_qtDelegate];
     if ([_qtDelegate respondsToSelector:@selector(application:openFiles:)]) {
         [_qtDelegate application:application openFiles:filenames];
     }
+    [NSApp setDelegate:self];
 }
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
 {
+    [NSApp setDelegate:_qtDelegate];
     if ([_qtDelegate respondsToSelector:@selector(application:openURLs:)]) {
         [_qtDelegate application:application openURLs:urls];
     }
+    [NSApp setDelegate:self];
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)application hasVisibleWindows:(BOOL)flag
 {
+    BOOL qtResult = NO;
+    [NSApp setDelegate:_qtDelegate];
+    
     if ([_qtDelegate respondsToSelector:@selector(applicationShouldHandleReopen:hasVisibleWindows:)]) {
-        return [_qtDelegate applicationShouldHandleReopen:application hasVisibleWindows:flag];
+        qtResult = [_qtDelegate applicationShouldHandleReopen:application hasVisibleWindows:flag];
     }
-    return NO;
+    
+    [NSApp setDelegate:self];
+    return qtResult;
 }
 
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
+    [NSApp setDelegate:_qtDelegate];
+    NSMenu *menu = nil;
     if ([_qtDelegate respondsToSelector:@selector(applicationDockMenu:)]) {
-        return [_qtDelegate applicationDockMenu:sender];
+        menu = [_qtDelegate applicationDockMenu:sender];
     }
-    return nil;
+    [NSApp setDelegate:self];
+    return menu;
 }
 
 @end
@@ -330,20 +380,8 @@ void* my_output_create(obs_data_t *settings, obs_output_t *output) {
 
     obs_log(LOG_INFO, "Output will be created");
 
-    if (glfwInit()) {
-        initialized = 1;
-
-        glfwSetErrorCallback(glfwIntErrorCallback);
-        glfwSetMonitorCallback(glfwIntMonitorCallback);
-
-        pool_thread_running = 1;
-        thrd_create(&pool_thread_id, pool_loop, NULL);
-
-        obs_log(LOG_INFO, "glfw initialized");
-    } else {
-        obs_log(LOG_INFO, "Failed to initialize glfw");
-        return (void*)NULL;
-    }
+    pool_thread_running = 1;
+    thrd_create(&pool_thread_id, pool_loop, NULL);
 
     context_info *info = bzalloc(sizeof(context_info));
     info->output = output;
@@ -478,6 +516,26 @@ bool obs_module_load(void)
     // a Qt delegate things will get CrAzY
     id<NSApplicationDelegate> qtDelegate = [NSApp delegate];
 
+    if (glfwInit()) {
+        initialized = 1;
+
+        glfwSetErrorCallback(glfwIntErrorCallback);
+        glfwSetMonitorCallback(glfwIntMonitorCallback);
+
+        obs_log(LOG_INFO, "glfw initialized");
+    } else {
+        obs_log(LOG_INFO, "Failed to initialize glfw");
+        return 0;
+    }
+
+    id<NSApplicationDelegate> glfwDelegate = [NSApp delegate];
+
+    ProjectorApplicationDelegate *appDelegate = [[ProjectorApplicationDelegate alloc] init];
+    appDelegate.glfwDelegate = glfwDelegate;
+    appDelegate.qtDelegate = qtDelegate;
+    
+    [NSApp setDelegate:appDelegate];
+
     obs_register_output(&my_output);
 
     output = obs_output_create("projector", "Projector Output", NULL, NULL);
@@ -496,14 +554,6 @@ bool obs_module_load(void)
     
     obs_output_set_video_conversion(output, &scale_info);
     bool success = obs_output_start(output);
-
-    id<NSApplicationDelegate> glfwDelegate = [NSApp delegate];
-
-    ProjectorApplicationDelegate *appDelegate = [[ProjectorApplicationDelegate alloc] init];
-    appDelegate.glfwDelegate = glfwDelegate;
-    appDelegate.qtDelegate = qtDelegate;
-    
-    [NSApp setDelegate:appDelegate];
 
     obs_log(LOG_INFO, "plugin started successfully");
 
