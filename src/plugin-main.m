@@ -39,8 +39,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "ogl-loader.h"
 
 @interface ProjectorApplicationDelegate : NSObject<NSApplicationDelegate>
-@property (nonatomic, strong) id<GLFWApplicationDelegate> glfwDelegate;
-@property (nonatomic, strong) id<GLFWApplicationDelegate> qtDelegate;
+@property (nonatomic, strong) id<NSApplicationDelegate> glfwDelegate;
+@property (nonatomic, strong) id<NSApplicationDelegate> qtDelegate;
 @end
 
 @implementation ProjectorApplicationDelegate 
