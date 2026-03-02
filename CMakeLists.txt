@@ -28,6 +28,12 @@ if(NOT APPLE)
 
   target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -Wl,--no-allow-shlib-undefined -Wl,-z,defs GLEW::GLEW OpenGL glfw m PkgConfig::LIBUV)
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
+
+  target_sources(
+    ${CMAKE_PROJECT_NAME} 
+    PRIVATE 
+    src/plugin-main.c
+  )
 endif()
 
 if(APPLE)
@@ -66,6 +72,21 @@ if(APPLE)
   target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "${MULTIARCH_LIBS_GEN_DIR}")
 
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OpenGL::GL glfw uv)
+
+  set(CMAKE_C_FLAGS "-x objective-c")
+  set(CMAKE_CXX_FLAGS "-x objective-c++")
+  set(CMAKE_EXE_LINKER_FLAGS "-framework Cocoa -framework AppKit -framework CoreData -framework Foundation")
+  set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+  set(CMAKE_HAVE_THREADS_LIBRARY 1)
+  set(CMAKE_USE_WIN32_THREADS_INIT 0)
+  set(CMAKE_USE_PTHREADS_INIT 1)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  
+  target_sources(
+    ${CMAKE_PROJECT_NAME} 
+    PRIVATE 
+    src/plugin-main.m
+  )
 endif()
 
 find_package(libobs REQUIRED)
@@ -119,7 +140,6 @@ add_custom_command(
 target_sources(
   ${CMAKE_PROJECT_NAME} 
   PRIVATE 
-  src/plugin-main.c
   src/triangle/triangle.h
   src/triangle/triangle.c
   src/cJSON/cJSON_Utils.h
