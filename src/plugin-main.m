@@ -47,123 +47,123 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    return [qtDelegate applicationShouldTerminate:sender];
+    return [_qtDelegate applicationShouldTerminate:sender];
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *) notification
 {
-    [glfwDelegate applicationDidChangeScreenParameters:notification];
-    [qtDelegate applicationDidChangeScreenParameters:notification];
+    [_glfwDelegate applicationDidChangeScreenParameters:notification];
+    [_qtDelegate applicationDidChangeScreenParameters:notification];
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
-    [qtDelegate applicationWillFinishLaunching:notification];
+    [_qtDelegate applicationWillFinishLaunching:notification];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    [qtDelegate applicationDidFinishLaunching:notification];
+    [_qtDelegate applicationDidFinishLaunching:notification];
 }
 
 - (void)applicationWillHide:(NSNotification *)notification
 {
-    [qtDelegate applicationWillHide:notification];
+    [_qtDelegate applicationWillHide:notification];
 }
 
 - (void)applicationDidHide:(NSNotification *)notification
 {
-    [qtDelegate applicationDidHide:notification];
+    [_qtDelegate applicationDidHide:notification];
 }
 
 - (void)applicationWillUnhide:(NSNotification *)notification
 {
-    [qtDelegate applicationWillUnhide:notification];
+    [_qtDelegate applicationWillUnhide:notification];
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification
 {
-    [qtDelegate applicationDidUnhide:notification];
+    [_qtDelegate applicationDidUnhide:notification];
 }
 
 - (void)applicationWillUpdate:(NSNotification *)notification
 {
-    [qtDelegate applicationWillUpdate:notification];
+    [_qtDelegate applicationWillUpdate:notification];
 }
 
 - (void)applicationDidUpdate:(NSNotification *)notification
 {
-    [qtDelegate applicationDidUpdate:notification];
+    [_qtDelegate applicationDidUpdate:notification];
 }
 
 // Additional NSApplicationDelegate methods forwarded to qtDelegate
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-    [qtDelegate applicationWillTerminate:notification];
+    [_qtDelegate applicationWillTerminate:notification];
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)notification
 {
-    [qtDelegate applicationWillBecomeActive:notification];
+    [_qtDelegate applicationWillBecomeActive:notification];
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
-    [qtDelegate applicationDidBecomeActive:notification];
+    [_qtDelegate applicationDidBecomeActive:notification];
 }
 
 - (void)applicationWillResignActive:(NSNotification *)notification
 {
-    [qtDelegate applicationWillResignActive:notification];
+    [_qtDelegate applicationWillResignActive:notification];
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification
 {
-    [qtDelegate applicationDidResignActive:notification];
+    [_qtDelegate applicationDidResignActive:notification];
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
-    if ([qtDelegate respondsToSelector:@selector(applicationShouldTerminateAfterLastWindowClosed:)]) {
-        return [qtDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
+    if ([_qtDelegate respondsToSelector:@selector(applicationShouldTerminateAfterLastWindowClosed:)]) {
+        return [_qtDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
     }
     return NO;
 }
 
 - (BOOL)application:(NSApplication *)application openFile:(NSString *)filename
 {
-    if ([qtDelegate respondsToSelector:@selector(application:openFile:)]) {
-        return [qtDelegate application:application openFile:filename];
+    if ([_qtDelegate respondsToSelector:@selector(application:openFile:)]) {
+        return [_qtDelegate application:application openFile:filename];
     }
     return NO;
 }
 
 - (void)application:(NSApplication *)application openFiles:(NSArray<NSString *> *)filenames
 {
-    if ([qtDelegate respondsToSelector:@selector(application:openFiles:)]) {
-        [qtDelegate application:application openFiles:filenames];
+    if ([_qtDelegate respondsToSelector:@selector(application:openFiles:)]) {
+        [_qtDelegate application:application openFiles:filenames];
     }
 }
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
 {
-    if ([qtDelegate respondsToSelector:@selector(application:openURLs:)]) {
-        [qtDelegate application:application openURLs:urls];
+    if ([_qtDelegate respondsToSelector:@selector(application:openURLs:)]) {
+        [_qtDelegate application:application openURLs:urls];
     }
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)application hasVisibleWindows:(BOOL)flag
 {
-    if ([qtDelegate respondsToSelector:@selector(applicationShouldHandleReopen:hasVisibleWindows:)]) {
-        return [qtDelegate applicationShouldHandleReopen:application hasVisibleWindows:flag];
+    if ([_qtDelegate respondsToSelector:@selector(applicationShouldHandleReopen:hasVisibleWindows:)]) {
+        return [_qtDelegate applicationShouldHandleReopen:application hasVisibleWindows:flag];
     }
     return NO;
 }
 
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
-    if ([qtDelegate respondsToSelector:@selector(applicationDockMenu:)]) {
-        return [qtDelegate applicationDockMenu:sender];
+    if ([_qtDelegate respondsToSelector:@selector(applicationDockMenu:)]) {
+        return [_qtDelegate applicationDockMenu:sender];
     }
     return nil;
 }
