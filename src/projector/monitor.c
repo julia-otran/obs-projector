@@ -136,7 +136,13 @@ void create_window(monitor *m, display_window *dw) {
 
     glfwWindowHint(GLFW_SAMPLES, 4);
 
+    log_debug("Creating fullscreen window with size %ix%i\n", mode->width, mode->height);
+
+#ifdef __linux__
+    dw->window = glfwCreateWindow(mode->width, mode->height - 1, "Projector", monitor, gl_share_context);
+#else
     dw->window = glfwCreateWindow(mode->width, mode->height, "Projector", monitor, gl_share_context);
+#endif
 
     glfwSetInputMode(dw->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     internal_monitors_set_win_exclude_pick(dw, 1);
@@ -167,6 +173,8 @@ void create_non_fs_window(monitor* m, display_window *dw, config_display* dsp) {
 
     int width = mode->width / 2;
     int height = (width * dsp->monitor_bounds.h) / dsp->monitor_bounds.w;
+
+    log_debug("Creating non fullscreen window with size %ix%i\n", width, height);
 
     dw->window = glfwCreateWindow(width, height, "Projector", NULL, gl_share_context);
 
